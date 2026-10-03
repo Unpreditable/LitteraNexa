@@ -1,0 +1,10 @@
+node_modules/
+main.js
+*.js.map
+.hotreload
+data.json
+.obsidian/
+.claude/settings.local.json
+docs/plans/
+.planning/*
+TODO.md

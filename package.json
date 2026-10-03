@@ -1,0 +1,35 @@
+{
+  "name": "obsidian-littera-nexa",
+  "version": "0.0.0",
+  "description": "Type the start of a note's name and link to it.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "validate-translations": "node scripts/validate-translations.mjs",
+    "build": "tsc -noEmit -skipLibCheck && npm run lint && node esbuild.config.mjs production",
+    "release-check": "npm run validate-translations && npm run build && npm test",
+    "lint": "eslint src/",
+    "test": "jest --passWithNoTests"
+  },
+  "keywords": [],
+  "author": "Vitaly Ditman",
+  "license": "GPL-3.0-only",
+  "devDependencies": {
+    "@eslint/js": "^9.39.3",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^24.19.1",
+    "esbuild": "^0.27.3",
+    "eslint": "^9.39.3",
+    "eslint-plugin-obsidianmd": "^0.3.0",
+    "globals": "^17.3.0",
+    "jest": "^29.7.0",
+    "obsidian": "^1.13.0",
+    "ts-jest": "^29.1.0",
+    "tslib": "^2.6.0",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.56.1"
+  },
+  "dependencies": {
+    "i18next": "^26.3.1"
+  }
+}

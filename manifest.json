@@ -1,0 +1,10 @@
+{
+  "id": "littera-nexa",
+  "name": "Littera Nexa",
+  "version": "0.0.0",
+  "minAppVersion": "1.13.0",
+  "description": "Type the start of a note's name and link to it.",
+  "author": "Vitaly Ditman",
+  "authorUrl": "https://github.com/Unpreditable",
+  "isDesktopOnly": false
+}
