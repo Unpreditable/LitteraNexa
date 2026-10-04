@@ -50,6 +50,11 @@ running, any source change auto-reloads the plugin without restarting Obsidian.
 |---|---|
 | [src/main.ts](src/main.ts) | Plugin entry point |
 | [src/i18n/i18n.ts](src/i18n/i18n.ts) | i18next init; every user-visible string goes through `t()` |
+| [src/suggest/NoteSuggest.ts](src/suggest/NoteSuggest.ts) | `EditorSuggest` subclass: triggers on typed text, collects notes and aliases, renders rows, inserts the link |
+| [src/suggest/queries.ts](src/suggest/queries.ts) | Pure: which search texts the text before the cursor yields |
+| [src/suggest/rank.ts](src/suggest/rank.ts) | Pure: which rows to show and in what order |
+| [src/suggest/links.ts](src/suggest/links.ts) | Pure: wikilink text and alias filtering |
+| [src/suggest/config.ts](src/suggest/config.ts) | Hardcoded tunables, each a setting-to-be |
 
 ### i18n
 
