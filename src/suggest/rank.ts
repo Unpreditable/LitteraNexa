@@ -4,6 +4,8 @@ export interface Candidate {
   file: unknown;
   /** The note name or alias a query is matched against. */
   text: string;
+  /** The alias this candidate is, or null for the note's name. */
+  alias: string | null;
 }
 
 export interface Rankable extends Candidate {
@@ -12,34 +14,67 @@ export interface Rankable extends Candidate {
 }
 
 /**
- * The rows to show, the note covering the most typed text first, each note's rows together. A note gets a row for every name
- * or alias that matched, then one for each of its other candidates, so any of them can be picked
- * once the note is found.
+ * The rows to show, the note covering the most typed text first, each note's rows together.
+ *
+ * A matching note shows its name, the alias that matched best, and then its other aliases as
+ * extras — the ones that also matched first, then the rest — up to `extraAliases` of them.
  *
  * When one name matched several queries the longer query wins, so picking it replaces all the
  * typed text it covers — but only when its leading words start words of the name, so a loose fuzzy
  * match never swallows typed words that aren't part of the name.
  */
-export function rank<C extends Candidate, M extends C & Rankable>(matches: M[], candidates: C[] = []): M[] {
+export function rank<C extends Candidate, M extends C & Rankable>(
+  matches: M[],
+  candidates: C[] = [],
+  extraAliases = Infinity,
+): M[] {
   const notes = new Map<unknown, Map<string, M>>();
   for (const match of matches) {
     let rows = notes.get(match.file);
     if (!rows) notes.set(match.file, (rows = new Map<string, M>()));
-    const current = rows.get(match.text);
-    if (!current || compareWithinNote(match, current) < 0) rows.set(match.text, match);
+    const current = rows.get(rowKey(match));
+    if (!current || compareWithinNote(match, current) < 0) rows.set(rowKey(match), match);
   }
 
-  const groups = [...notes.values()].map((rows) => [...rows.values()].sort(compareWithinNote));
-  groups.sort((a, b) => compareAcrossNotes(a[0], b[0]));
+  // Grouped once rather than filtered per note: with the whole vault in scope, both lists are long.
+  const byNote = new Map<unknown, C[]>();
+  for (const candidate of candidates) {
+    if (!notes.has(candidate.file)) continue;
+    const own = byNote.get(candidate.file);
+    if (own) own.push(candidate);
+    else byNote.set(candidate.file, [candidate]);
+  }
 
-  return groups.flatMap((rows) => {
-    const [best] = rows;
-    const shown = new Set(rows.map((row) => row.text));
-    const others = candidates
-      .filter((c) => c.file === best.file && !shown.has(c.text))
-      .map((c) => ({ ...c, query: best.query, result: { score: -Infinity, matches: [] } }) as unknown as M);
-    return [...rows, ...others];
-  });
+  const groups = [...notes.entries()].map(([file, rows]) =>
+    noteRows([...rows.values()], byNote.get(file) ?? [], extraAliases),
+  );
+  groups.sort((a, b) => compareAcrossNotes(a[0], b[0]));
+  return groups.flat();
+}
+
+/** One note's rows: its best row, its name or matched alias, then the extras. */
+function noteRows<C extends Candidate, M extends C & Rankable>(matched: M[], own: C[], extraAliases: number): M[] {
+  matched.sort(compareWithinNote);
+  const best = matched[0];
+  const offer = (c: C) => ({ ...c, query: best.query, result: { score: -Infinity, matches: [] } }) as unknown as M;
+
+  const shown = new Set(matched.map(rowKey));
+  const unmatched = own.filter((c) => !shown.has(rowKey(c)));
+
+  const [primary, ...alsoMatched] = matched.filter((row) => row.alias !== null);
+  const name = matched.find((row) => row.alias === null) ?? unmatched.filter((c) => c.alias === null).map(offer)[0];
+  const head = [name, primary].filter((row): row is M => row !== undefined);
+  // The offered name has no score to compare, so it only ever follows the matched alias.
+  if (head.length === 2 && head[0].result.score !== -Infinity) head.sort(compareWithinNote);
+  else if (head.length === 2) head.reverse();
+
+  const extras = [...alsoMatched, ...unmatched.filter((c) => c.alias !== null).map(offer)];
+  return [...head, ...extras.slice(0, extraAliases)];
+}
+
+/** Tells a note's name from an alias spelled the same. */
+function rowKey(row: Candidate): string {
+  return `${row.alias === null ? "name" : "alias"}:${row.text}`;
 }
 
 function compareWithinNote(a: Rankable, b: Rankable): number {

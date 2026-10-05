@@ -8,6 +8,8 @@ module.exports = {
     "^obsidian$": "<rootDir>/tests/__mocks__/obsidian.ts",
   },
   transform: {
-    "^.+\\.ts$": ["ts-jest", { tsconfig: "tsconfig.test.json" }],
+    // 151002: ts-jest wants isolatedModules with Node16 modules, which would stop it type-checking
+    // the tests. They compile to CommonJS and run fine without it.
+    "^.+\\.ts$": ["ts-jest", { tsconfig: "tsconfig.test.json", diagnostics: { ignoreCodes: [151002] } }],
   },
 };

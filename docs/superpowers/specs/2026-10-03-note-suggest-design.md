@@ -10,11 +10,15 @@ surfaces notes the writer may have forgotten exist.
 
 Obsidian's native `[[` suggester is not changed or replaced.
 
-## Scope of v1
+## Scope and tunables
 
-- Candidate notes: every markdown file under `People/`, including subfolders.
+Which notes are suggested, the trigger rules, the places suggestions appear and the alias rows are
+settings; see `2026-10-04-settings-design.md`. This document describes the behaviour at the
+defaults. Where it names a constant, read the setting of the same meaning: `CAPITAL_ONLY` is
+"Capital letters only", `MIN_LETTERS` "Minimum characters", `MAX_WORDS` "Maximum words", and
+`People/` whatever the scope covers (the entire vault by default).
+
 - A note matches on its name or on any of its frontmatter aliases.
-- No settings tab. Every tunable is a constant in `src/suggest/config.ts`; see "Later".
 
 ## Behaviour
 
@@ -124,7 +128,6 @@ All in `src/suggest/`.
 
 | File | Kind | Responsibility |
 |---|---|---|
-| `config.ts` | constants | `FOLDER = "People"`, `INCLUDE_SUBFOLDERS = true`, `CAPITAL_ONLY = true`, `MIN_LETTERS = 3`, `MAX_WORDS = 3`. Header comment: each becomes a setting. |
 | `queries.ts` | pure | `findQueries(before, after, opts) → { text, startCh }[]`, including every current-line check. |
 | `rank.ts` | pure | `rank(matches, candidates)`: choose, group and order the rows. |
 | `links.ts` | pure | `buildLink(target, alias, inTable)` and `isLinkableAlias(alias)`. |
@@ -145,11 +148,6 @@ Jest covers the pure units: `tests/queries.test.ts`, `tests/rank.test.ts`, `test
 
 ## Later
 
-1. Settings tab: folder picker, include subfolders, capital letters only, minimum letters, maximum
-   words, whether to offer a matching note's aliases as rows, and how many aliases to show per note.
-2. Configurable scope beyond one folder.
-3. Vault-wide index (keep names and aliases in memory, updated on vault and metadata events) for
+1. Vault-wide index (keep names and aliases in memory, updated on vault and metadata events) for
    scopes with thousands of files.
-4. Tab to accept.
-5. Setting for where the popup stays quiet: code blocks, math blocks, comments and frontmatter are
-   excluded today; native `[[` works in all of them.
+2. Tab to accept.

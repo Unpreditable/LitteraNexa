@@ -1,4 +1,5 @@
 import {
+  App,
   Editor,
   EditorPosition,
   EditorSuggest,
@@ -11,12 +12,12 @@ import {
   SectionCache,
   setIcon,
   TFile,
-  Vault,
 } from "obsidian";
-import { CAPITAL_ONLY, FOLDER, INCLUDE_SUBFOLDERS, MAX_WORDS, MIN_LETTERS } from "./config";
+import { extraAliasLimit, LitteraNexaSettings } from "../settings";
 import { buildLink, isLinkableAlias } from "./links";
 import { findQueries, Query } from "./queries";
 import { rank } from "./rank";
+import { inScope } from "./scope";
 
 interface Candidate {
   file: TFile;
@@ -32,19 +33,29 @@ interface NoteMatch extends Candidate {
   result: SearchResult;
 }
 
-// Sections where a link makes no sense.
-const EXCLUDED_SECTIONS = new Set(["code", "math", "comment"]);
-
-const OPTIONS = { capitalOnly: CAPITAL_ONLY, minLetters: MIN_LETTERS, maxWords: MAX_WORDS };
-
 export class NoteSuggest extends EditorSuggest<NoteMatch> {
   /** Queries found by the last onTrigger; the context has no room for them. */
   private queries: Query[] = [];
 
+  constructor(
+    app: App,
+    /** Read on every keystroke, so a changed setting applies at once. */
+    private readonly settings: () => LitteraNexaSettings,
+  ) {
+    super(app);
+  }
+
   onTrigger(cursor: EditorPosition, editor: Editor, file: TFile | null): EditorSuggestTriggerInfo | null {
     if (!file) return null;
+    const settings = this.settings();
     const line = editor.getLine(cursor.line);
-    const queries = findQueries(line.slice(0, cursor.ch), line.slice(cursor.ch), OPTIONS);
+    const queries = findQueries(line.slice(0, cursor.ch), line.slice(cursor.ch), {
+      capitalOnly: settings.capitalOnly,
+      minCharacters: settings.minCharacters,
+      maxWords: settings.maxWords,
+      inlineCode: settings.inInlineCode,
+      inlineMath: settings.inInlineMath,
+    });
     if (queries.length === 0 || (this.isNoteEditor(editor) && this.isExcluded(file, cursor.line))) return null;
 
     this.queries = queries;
@@ -66,7 +77,7 @@ export class NoteSuggest extends EditorSuggest<NoteMatch> {
         if (result) matches.push({ ...candidate, query, result });
       }
     }
-    return rank(matches, candidates);
+    return rank(matches, candidates, extraAliasLimit(this.settings().extraAliases));
   }
 
   renderSuggestion(match: NoteMatch, el: HTMLElement): void {
@@ -102,9 +113,15 @@ export class NoteSuggest extends EditorSuggest<NoteMatch> {
   }
 
   private isExcluded(file: TFile, line: number): boolean {
+    const settings = this.settings();
     const fm = this.app.metadataCache.getFileCache(file)?.frontmatterPosition;
-    if (fm && line >= fm.start.line && line <= fm.end.line) return true;
-    return EXCLUDED_SECTIONS.has(this.sectionAt(file, line)?.type ?? "");
+    if (!settings.inFrontmatter && fm && line >= fm.start.line && line <= fm.end.line) return true;
+    const type = this.sectionAt(file, line)?.type;
+    return (
+      (type === "code" && !settings.inCodeBlocks) ||
+      (type === "math" && !settings.inMathBlocks) ||
+      (type === "comment" && !settings.inComments)
+    );
   }
 
   private sectionAt(file: TFile, line: number): SectionCache | undefined {
@@ -114,19 +131,14 @@ export class NoteSuggest extends EditorSuggest<NoteMatch> {
   }
 
   private collectCandidates(current: TFile): Candidate[] {
-    const folder = this.app.vault.getFolderByPath(FOLDER);
-    if (!folder) return [];
-
-    const files: TFile[] = [];
-    const add = (f: unknown) => {
-      if (f instanceof TFile && f.extension === "md" && f !== current) files.push(f);
-    };
-    if (INCLUDE_SUBFOLDERS) Vault.recurseChildren(folder, add);
-    else folder.children.forEach(add);
+    const settings = this.settings();
+    const files = this.app.vault.getMarkdownFiles().filter((file) => file !== current && inScope(file.path, settings));
 
     const candidates: Candidate[] = [];
     for (const file of files) {
-      candidates.push({ file, text: file.basename, alias: null, note: `${file.parent?.path ?? ""}/` });
+      // The root's own path is already "/".
+      const folder = !file.parent || file.parent.isRoot() ? "/" : `${file.parent.path}/`;
+      candidates.push({ file, text: file.basename, alias: null, note: folder });
       const path = file.path.slice(0, -file.extension.length - 1);
       const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
       for (const alias of parseFrontMatterAliases(frontmatter) ?? []) {

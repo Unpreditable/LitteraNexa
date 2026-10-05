@@ -67,4 +67,36 @@ describe("rank", () => {
     const b = m("b", -2, q("Then I deci"));
     expect(rank([a, b])).toEqual([b, a]);
   });
+
+  describe("extra aliases", () => {
+    const query = q("Jo");
+    const name = { file: "joseph", text: "Joseph Park", alias: null };
+    const jo = m("joseph", -1, query, "Jo", "Jo");
+    const joey = m("joseph", -3, query, "Joey", "Joey");
+    const seph = { file: "joseph", text: "Seph", alias: "Seph" };
+    const candidates = [name, { ...jo }, { ...joey }, seph];
+    const offered = (c: typeof name | typeof seph) => ({ ...c, query, result: { score: -Infinity, matches: [] } });
+
+    it("shows the closest alias as the match and the rest as extras", () => {
+      expect(rank([joey, jo], candidates)).toEqual([jo, offered(name), joey, offered(seph)]);
+    });
+
+    it("limits the extras, matched ones first", () => {
+      expect(rank([joey, jo], candidates, 1)).toEqual([jo, offered(name), joey]);
+      expect(rank([joey, jo], candidates, 0)).toEqual([jo, offered(name)]);
+    });
+
+    it("counts every alias as an extra when only the name matched", () => {
+      const byName = m("joseph", -1, q("Park"), "Joseph Park");
+      const all = rank([byName], candidates);
+      expect(all.map((row) => row.text)).toEqual(["Joseph Park", "Jo", "Joey", "Seph"]);
+      expect(rank([byName], candidates, 0)).toEqual([byName]);
+    });
+
+    it("keeps both rows when an alias has the same text as the name", () => {
+      const byName = m("ann", -1, q("Ann"), "Ann");
+      const byAlias = m("ann", -1, q("Ann"), "Ann", "Ann");
+      expect(rank([byName, byAlias])).toHaveLength(2);
+    });
+  });
 });

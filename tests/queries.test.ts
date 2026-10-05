@@ -1,6 +1,6 @@
 import { findQueries, QueryOptions } from "../src/suggest/queries";
 
-const opts: QueryOptions = { capitalOnly: true, minLetters: 3, maxWords: 3 };
+const opts: QueryOptions = { capitalOnly: true, minCharacters: 3, maxWords: 3, inlineCode: false, inlineMath: false };
 const q = (before: string, after = "", o: QueryOptions = opts) => findQueries(before, after, o);
 
 describe("findQueries", () => {
@@ -60,6 +60,16 @@ describe("findQueries", () => {
   it("does not trigger inside inline code", () => {
     expect(q("`John")).toEqual([]);
     expect(q("`a` John")).toEqual([{ text: "John", startCh: 4 }]);
+  });
+
+  it("triggers inside inline code when that is allowed", () => {
+    expect(q("`John", "", { ...opts, inlineCode: true })).toEqual([{ text: "John", startCh: 1 }]);
+    expect(q("$x John", "", { ...opts, inlineCode: true })).toEqual([]);
+  });
+
+  it("triggers inside inline math when that is allowed", () => {
+    expect(q("$x John", "", { ...opts, inlineMath: true })).toEqual([{ text: "John", startCh: 3 }]);
+    expect(q("`John", "", { ...opts, inlineMath: true })).toEqual([]);
   });
 
   it("does not trigger mid-word", () => {

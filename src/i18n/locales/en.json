@@ -1,1 +1,92 @@
-{}
+{
+  "settings": {
+    "scope": {
+      "heading_comment": "Heading of the first settings group: which notes the plugin offers as link suggestions.",
+      "heading": "Notes to suggest",
+      "mode": {
+        "name_comment": "Setting name. Its dropdown chooses between the whole vault and a list of folders; the list is rendered directly below.",
+        "name": "Suggest notes from",
+        "vault_comment": "Dropdown option: every note in the vault apart from the folders in the list below it. The trailing ellipsis points at that list — translate the meaning, not the English sentence structure. This exact label is also inserted into the warning text (largeVault).",
+        "vault": "Entire vault, except…",
+        "folders_comment": "Dropdown option: only notes in the folders in the list below it. This exact label is also inserted into the warning text (largeVault), so it must read naturally inside quotation marks there.",
+        "folders": "Selected folders"
+      },
+      "largeVault_comment": "Warning shown under the dropdown, in the warning colour and after a warning icon, while the entire-vault option is selected. {{folders}} is replaced by the 'Selected folders' dropdown label and {{vault}} by the 'Entire vault, except…' label — keep both placeholders and the quotation marks around them.",
+      "largeVault": "Consider using “{{folders}}”. The “{{vault}}” option is not optimized yet for larger vaults.",
+      "excludedHeading_comment": "Heading of the folder list while 'Entire vault, except…' is selected: notes in these folders are not suggested.",
+      "excludedHeading": "Excluded folders",
+      "includedHeading_comment": "Heading of the folder list while 'Selected folders' is selected: only notes in these folders are suggested.",
+      "includedHeading": "Folders",
+      "excludeFolder_comment": "Tooltip of the + button (desktop) and label of the add row (mobile) that adds a folder to the excluded list.",
+      "excludeFolder": "Exclude folder",
+      "addFolder_comment": "Tooltip of the + button (desktop) and label of the add row (mobile) that adds a folder to the list of selected folders.",
+      "addFolder": "Add folder",
+      "noFolders_comment": "Shown in place of the list when 'Selected folders' is selected and no folder has been added, so the plugin suggests nothing.",
+      "noFolders": "No folders selected. Nothing will be suggested.",
+      "folderPlaceholder_comment": "Placeholder inside an empty folder path field.",
+      "folderPlaceholder": "Folder path",
+      "includeSubfolders_comment": "Label of the checkbox on each folder row. Ticked: notes in folders below this one count too. Unticked: only notes directly in this folder.",
+      "includeSubfolders": "Include subfolders",
+      "removeFolder_comment": "Tooltip of the button that removes a folder row from the list.",
+      "removeFolder": "Remove",
+      "folderNotFound_comment": "Tooltip on the warning icon shown when a row's folder no longer exists in the vault — renamed, moved or deleted. The path is visible in the field beside it, so it is not repeated here.",
+      "folderNotFound": "Folder not found",
+      "newFolder_comment": "Name Obsidian's settings search uses for a folder row whose path field is still empty. Rarely seen.",
+      "newFolder": "New folder"
+    },
+    "trigger": {
+      "heading_comment": "Heading of the second settings group: the rules for when the suggestion list opens as the user types.",
+      "heading": "When to suggest",
+      "capitalOnly": {
+        "name_comment": "Toggle name. On: the list only opens for a word that starts with a capital letter or a digit.",
+        "name": "Starts with a capital",
+        "description_comment": "Description of the 'Starts with a capital' toggle.",
+        "description": "Only start suggesting at a word that begins with a capital letter or a digit."
+      },
+      "minCharacters": {
+        "name_comment": "Slider name: how much must be typed before the list opens.",
+        "name": "Minimum characters",
+        "description_comment": "Description of the 'Minimum characters' slider.",
+        "description": "How many letters or digits you type before suggestions appear."
+      },
+      "maxWords": {
+        "name_comment": "Slider name: how many typed words, counting back from the cursor, can belong to one suggestion.",
+        "name": "Maximum words",
+        "description_comment": "Description of the 'Maximum words' slider.",
+        "description": "How many words back from the cursor a suggestion can start."
+      }
+    },
+    "sections": {
+      "heading_comment": "Name of a row that opens a sub-page, and the title of that page: the parts of a note in which the suggestion list is allowed to open.",
+      "heading": "Where suggestions appear",
+      "text_comment": "A part of a note: ordinary text. Always on. Also the first item of the summary line on the main page.",
+      "text": "Text",
+      "codeBlocks_comment": "A part of a note: fenced code blocks.",
+      "codeBlocks": "Code blocks",
+      "inlineCode_comment": "A part of a note: code between backticks inside a line.",
+      "inlineCode": "Inline code",
+      "mathBlocks_comment": "A part of a note: math blocks between $$ lines.",
+      "mathBlocks": "Math blocks",
+      "inlineMath_comment": "A part of a note: math between $ signs inside a line.",
+      "inlineMath": "Inline math",
+      "comments_comment": "A part of a note: Obsidian comments between %% markers.",
+      "comments": "Comments",
+      "frontmatter_comment": "A part of a note: the YAML properties block at the top. Use the word your language's Obsidian uses for it.",
+      "frontmatter": "Frontmatter"
+    },
+    "rows": {
+      "heading_comment": "Heading of the third settings group: what the suggestion list shows.",
+      "heading": "What to show",
+      "extraAliases": {
+        "name_comment": "Dropdown name. When a note matches, its other aliases can be listed as additional rows; this limits how many.",
+        "name": "Extra aliases per note",
+        "description_comment": "Description of the 'Extra aliases per note' dropdown.",
+        "description": "A matching note's other aliases are offered as extra rows. The alias you typed always shows.",
+        "none_comment": "Dropdown option: offer no extra aliases.",
+        "none": "None",
+        "all_comment": "Dropdown option after '1' and '2': three extra aliases or however many more the note has — in effect, all of them.",
+        "all": "3 or more"
+      }
+    }
+  }
+}

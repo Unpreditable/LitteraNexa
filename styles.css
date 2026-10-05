@@ -1,1 +1,81 @@
 /* Littera Nexa */
+
+/* The rows of one section read as a set: no rules between them, and less air than Obsidian's
+   default, which is sized for pages with far fewer rows. */
+.setting-group.littera-nexa-first-group,
+.setting-group.littera-nexa-group,
+.setting-group.littera-nexa-folder-list {
+  --setting-items-divider-width: 0;
+  --setting-items-padding-y: var(--size-2-3);
+}
+
+/* The rule sits between sections instead, on the heading of each one after the first. The folder
+   list belongs to the first section, so it gets none. */
+.littera-nexa-group .setting-item.setting-item-heading {
+  border-radius: 0;
+  border-top: var(--border-width) solid var(--background-modifier-border);
+  padding-block-start: var(--size-4-4);
+}
+
+/* The warning under the scope dropdown: an icon, then the line. */
+.littera-nexa-settings-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--size-2-2);
+  color: var(--text-warning);
+}
+
+.littera-nexa-settings-warning-icon {
+  display: flex;
+  flex: none;
+  --icon-size: var(--icon-xs);
+}
+
+/* The sub-page of toggles, as snug as the sections on the main page. */
+.littera-nexa-settings-page .setting-item {
+  padding-block: var(--size-4-2);
+}
+
+/* One folder of a scope list: icon, path, subfolders checkbox, remove. */
+.setting-item.littera-nexa-folder-row {
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.littera-nexa-folder-icon {
+  display: flex;
+  color: var(--text-muted);
+  --icon-size: var(--icon-s);
+}
+
+.littera-nexa-folder-icon.littera-nexa-folder-missing {
+  color: var(--text-error);
+}
+
+.littera-nexa-folder-row .littera-nexa-folder-path {
+  flex: 1;
+  min-width: 0;
+}
+
+.littera-nexa-folder-subfolders {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-2);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  white-space: nowrap;
+}
+
+/* The folder list is a sub-setting of the dropdown above it, not a section: indented under it,
+   pulled up close, and titled like a row label rather than a heading. */
+.setting-group.littera-nexa-folder-list {
+  --setting-group-heading-color: var(--text-muted);
+  --setting-group-heading-size: var(--font-ui-small);
+  --setting-group-heading-weight: var(--font-normal);
+  margin-top: var(--size-4-2);
+  padding-inline-start: var(--size-4-8);
+}
+
+.setting-group.littera-nexa-folder-list .setting-item-heading {
+  margin-bottom: var(--size-4-1);
+}

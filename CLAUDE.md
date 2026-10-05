@@ -54,7 +54,9 @@ running, any source change auto-reloads the plugin without restarting Obsidian.
 | [src/suggest/queries.ts](src/suggest/queries.ts) | Pure: which search texts the text before the cursor yields |
 | [src/suggest/rank.ts](src/suggest/rank.ts) | Pure: which rows to show and in what order |
 | [src/suggest/links.ts](src/suggest/links.ts) | Pure: wikilink text and alias filtering |
-| [src/suggest/config.ts](src/suggest/config.ts) | Hardcoded tunables, each a setting-to-be |
+| [src/suggest/scope.ts](src/suggest/scope.ts) | Pure: whether a note is in the suggested scope |
+| [src/settings.ts](src/settings.ts) | Pure: settings type, defaults, validation of saved data |
+| [src/settings/settings-tab.ts](src/settings/settings-tab.ts) | Settings tab (Obsidian 1.13 declarative definitions); `folder-list.ts` draws the folder rows, `sections-page.ts` the sub-page |
 
 ### i18n
 

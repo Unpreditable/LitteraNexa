@@ -5,8 +5,12 @@ export interface Query {
 
 export interface QueryOptions {
   capitalOnly: boolean;
-  minLetters: number;
+  minCharacters: number;
   maxWords: number;
+  /** Whether suggestions are allowed inside inline code. */
+  inlineCode: boolean;
+  /** Whether suggestions are allowed inside inline math. */
+  inlineMath: boolean;
 }
 
 // Letters, digits, and the apostrophes and hyphen that stay inside a word (O'Brien, Jean-Luc).
@@ -25,8 +29,8 @@ export function findQueries(before: string, after: string, opts: QueryOptions): 
   if (typed.length === 0 || !WORD_CHAR.test(typed[typed.length - 1])) return [];
   // An open [ covers both an open [[ and the text of a markdown link.
   if (typed.lastIndexOf("[") > typed.lastIndexOf("]")) return [];
-  if (typed.split("`").length % 2 === 0) return [];
-  if (typed.replace(/\\\$/g, "").split("$").length % 2 === 0) return [];
+  if (!opts.inlineCode && typed.split("`").length % 2 === 0) return [];
+  if (!opts.inlineMath && typed.replace(/\\\$/g, "").split("$").length % 2 === 0) return [];
 
   const queries: Query[] = [];
   let end = typed.length;
@@ -46,7 +50,7 @@ export function findQueries(before: string, after: string, opts: QueryOptions): 
       const text = typed.slice(startCh);
       // A leading digit counts as a capital, so 3Mxx searches for "3Mxx", never "Mxx".
       const capital = /[\p{Lu}\p{N}]/u.test(typed[startCh]);
-      if ((capital || !opts.capitalOnly) && countCharacters(text) >= opts.minLetters) {
+      if ((capital || !opts.capitalOnly) && countCharacters(text) >= opts.minCharacters) {
         queries.push({ text, startCh });
       }
     }
