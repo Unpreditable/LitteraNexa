@@ -1,6 +1,6 @@
 {
   "name": "obsidian-littera-nexa",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Type the start of a note's name and link to it.",
   "main": "main.js",
   "scripts": {
