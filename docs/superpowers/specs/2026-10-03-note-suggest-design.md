@@ -72,7 +72,29 @@ cell's, not the note's. The cache checks are skipped there (detected as an edito
 
 ### Matching
 
-- Subsequence matching via Obsidian's `prepareFuzzySearch`, the same kind native `[[` uses.
+- Word-by-word matching by the plugin's own `matchWords` (since 2026-10-06; before that, Obsidian's
+  `prepareFuzzySearch`, which let typed letters match across a space: `js mi` found "Jane Smith").
+  - Words are split on whitespace only, in the typed text and in the name. Case and accents are
+    ignored.
+  - Every typed word must fit a different word of the name, in the name's order. Words of the name
+    may be skipped: `ja sm` finds "Jane Marie Smith", `smith jane` finds nothing.
+  - What fitting a word means is the "Matching rule" setting, applied to each word on its own:
+
+    | Rule | Fits "Smith" | Does not |
+    |---|---|---|
+    | Start of word | `smi` | `smt`, `mit` |
+    | First letter, then letters in order (default) | `smi`, `smt` | `mit` |
+    | Part of word | `smi`, `mit` | `smt` |
+    | Letters in order | `smi`, `smt`, `mit`, `mth` | |
+    | Start of word, allowing typos | `smi`, `smyt`, `smtih` | `smt`, `mith` |
+
+  - A typo is one wrong, missing, extra or swapped letter, counted against the start of the word.
+    A typed word of up to three letters may have none, up to seven one, eight or more two, and its
+    first letter must be right.
+  - The score orders tighter fits first — exact word, start of word, then a run of letters inside
+    the word or one typo, then scattered letters or two typos — then names with fewer unmatched
+    words, then shorter names. When a name can be fitted more than one way, the tightest is taken
+    and highlighted, the earlier words on a tie.
 - Each query is run against each note's name and each alias.
 - Aliases are read with `parseFrontMatterAliases` (handles a string, a list, and legacy `alias:`).
   An alias is skipped if it is not text, is blank, or contains `[[`, `]]` or `|`.
@@ -129,6 +151,7 @@ All in `src/suggest/`.
 | File | Kind | Responsibility |
 |---|---|---|
 | `queries.ts` | pure | `findQueries(before, after, opts) → { text, startCh }[]`, including every current-line check. |
+| `match.ts` | pure | `matchWords(query, text, rule) → { score, matches } \| null`: the word-by-word match. |
 | `rank.ts` | pure | `rank(matches, candidates)`: choose, group and order the rows. |
 | `links.ts` | pure | `buildLink(target, alias, inTable)` and `isLinkableAlias(alias)`. |
 | `NoteSuggest.ts` | Obsidian | `EditorSuggest` subclass: `onTrigger`, `getSuggestions`, `renderSuggestion`, `selectSuggestion`. |
@@ -136,14 +159,14 @@ All in `src/suggest/`.
 `onTrigger` returns a trigger range starting at the earliest query start (where Obsidian anchors the
 popup) and keeps the queries in a private field, because `EditorSuggestContext` has no room for
 them. `getSuggestions` walks the folder subtree via `vault.getFolderByPath(FOLDER)` — only that
-subtree, not the whole vault — collects names and aliases, runs `prepareFuzzySearch` per query, and
+subtree, not the whole vault — collects names and aliases, runs `matchWords` per query, and
 passes the matches and all candidates to `rank`.
 
 `main.ts` registers it: `this.registerEditorSuggest(new NoteSuggest(this.app))`.
 
 ## Testing
 
-Jest covers the pure units: `tests/queries.test.ts`, `tests/rank.test.ts`, `tests/links.test.ts`.
+Jest covers the pure units: `tests/queries.test.ts`, `tests/match.test.ts`, `tests/rank.test.ts`, `tests/links.test.ts`.
 `NoteSuggest.ts` is API glue and is checked by hand in Obsidian.
 
 ## Later

@@ -3,6 +3,8 @@ import {
   DEFAULT_SETTINGS,
   FolderEntry,
   LitteraNexaSettings,
+  MATCH_RULES,
+  MatchRule,
   MAX_WORDS_RANGE,
   MIN_CHARACTERS_RANGE,
   ScopeMode,
@@ -108,6 +110,11 @@ export class LitteraNexaSettingTab extends PluginSettingTab {
             },
           },
           {
+            // Drawn by hand for the same reason as the scope dropdown: its description follows it.
+            name: t("settings.trigger.matchRule.name"),
+            render: (setting: Setting) => this.renderMatchRule(setting),
+          },
+          {
             name: t("settings.sections.heading"),
             type: "page",
             displayValue: () => sectionsSummary(this.host.settings),
@@ -157,6 +164,22 @@ export class LitteraNexaSettingTab extends PluginSettingTab {
   /** The mode decides which list, heading and warning are on the page, so the page is redrawn. */
   private async setScopeMode(mode: ScopeMode): Promise<void> {
     this.host.settings.scopeMode = mode;
+    await this.host.saveSettings();
+    this.update();
+  }
+
+  private renderMatchRule(setting: Setting): void {
+    const rule = this.host.settings.matchRule;
+    setting.setDesc(t(`settings.trigger.matchRule.${rule}.description`));
+    setting.addDropdown((dropdown) => {
+      for (const option of MATCH_RULES) dropdown.addOption(option, t(`settings.trigger.matchRule.${option}.name`));
+      dropdown.setValue(rule).onChange((value) => void this.setMatchRule(value as MatchRule));
+    });
+  }
+
+  /** The description under the dropdown is the chosen rule's, so the page is redrawn. */
+  private async setMatchRule(rule: MatchRule): Promise<void> {
+    this.host.settings.matchRule = rule;
     await this.host.saveSettings();
     this.update();
   }

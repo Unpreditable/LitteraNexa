@@ -54,6 +54,40 @@
         "name": "",
         "description_comment": "Description of the 'Maximum words' slider.",
         "description": ""
+      },
+      "matchRule": {
+        "name_comment": "Dropdown name. Chooses how the letters of one typed word must fit one word of a note's name or alias. The rule is applied to every typed word separately, and a space always separates words.",
+        "name": "",
+        "prefix": {
+          "name_comment": "Dropdown option, the strictest: the typed letters are the beginning of the word.",
+          "name": "",
+          "description_comment": "Shown under the dropdown while 'Start of word' is selected. The quoted examples are what a user types and 'Jane Smith' is a note name; keep the typed examples as they are, and keep the name unless your script needs another.",
+          "description": ""
+        },
+        "anchored": {
+          "name_comment": "Dropdown option, the default: the first typed letter is the word's first letter, and the rest follow in the word's order with letters left out.",
+          "name": "",
+          "description_comment": "Shown under the dropdown while 'First letter, then letters in order' is selected. Examples as in the 'Start of word' description.",
+          "description": ""
+        },
+        "substring": {
+          "name_comment": "Dropdown option: the typed letters appear next to each other anywhere inside the word.",
+          "name": "",
+          "description_comment": "Shown under the dropdown while 'Part of word' is selected. Examples as in the 'Start of word' description.",
+          "description": ""
+        },
+        "subsequence": {
+          "name_comment": "Dropdown option, the loosest: the typed letters appear in the word's order anywhere inside it, with letters left out.",
+          "name": "",
+          "description_comment": "Shown under the dropdown while 'Letters in order' is selected. Examples as in the 'Start of word' description.",
+          "description": ""
+        },
+        "typos": {
+          "name_comment": "Dropdown option: like 'Start of word', but a typed word may contain a typing mistake — a wrong, missing, extra or swapped letter. The first letter must still be right.",
+          "name": "",
+          "description_comment": "Shown under the dropdown while 'Start of word, allowing typos' is selected. Examples as in the 'Start of word' description: 'jnae smtih' has two letters swapped in each word, 'hane' has the wrong first letter.",
+          "description": ""
+        }
       }
     },
     "sections": {

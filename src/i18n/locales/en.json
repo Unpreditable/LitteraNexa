@@ -54,6 +54,40 @@
         "name": "Maximum words",
         "description_comment": "Description of the 'Maximum words' slider.",
         "description": "How many words back from the cursor a suggestion can start."
+      },
+      "matchRule": {
+        "name_comment": "Dropdown name. Chooses how the letters of one typed word must fit one word of a note's name or alias. The rule is applied to every typed word separately, and a space always separates words.",
+        "name": "Matching rule",
+        "prefix": {
+          "name_comment": "Dropdown option, the strictest: the typed letters are the beginning of the word.",
+          "name": "Start of word",
+          "description_comment": "Shown under the dropdown while 'Start of word' is selected. The quoted examples are what a user types and 'Jane Smith' is a note name; keep the typed examples as they are, and keep the name unless your script needs another.",
+          "description": "Each typed word begins a word of the name: “ja smi” finds Jane Smith; “jn sm” does not."
+        },
+        "anchored": {
+          "name_comment": "Dropdown option, the default: the first typed letter is the word's first letter, and the rest follow in the word's order with letters left out.",
+          "name": "First letter, then letters in order",
+          "description_comment": "Shown under the dropdown while 'First letter, then letters in order' is selected. Examples as in the 'Start of word' description.",
+          "description": "Each typed word starts with a word's first letter and may leave letters out: “jn sm” finds Jane Smith; “an mit” does not."
+        },
+        "substring": {
+          "name_comment": "Dropdown option: the typed letters appear next to each other anywhere inside the word.",
+          "name": "Part of word",
+          "description_comment": "Shown under the dropdown while 'Part of word' is selected. Examples as in the 'Start of word' description.",
+          "description": "Each typed word is a run of letters anywhere in a word: “an mit” finds Jane Smith; “jn sm” does not."
+        },
+        "subsequence": {
+          "name_comment": "Dropdown option, the loosest: the typed letters appear in the word's order anywhere inside it, with letters left out.",
+          "name": "Letters in order",
+          "description_comment": "Shown under the dropdown while 'Letters in order' is selected. Examples as in the 'Start of word' description.",
+          "description": "Each typed word's letters appear in order anywhere in a word: “jn sm” and “an mth” both find Jane Smith."
+        },
+        "typos": {
+          "name_comment": "Dropdown option: like 'Start of word', but a typed word may contain a typing mistake — a wrong, missing, extra or swapped letter. The first letter must still be right.",
+          "name": "Start of word, allowing typos",
+          "description_comment": "Shown under the dropdown while 'Start of word, allowing typos' is selected. Examples as in the 'Start of word' description: 'jnae smtih' has two letters swapped in each word, 'hane' has the wrong first letter.",
+          "description": "Each typed word begins a word of the name, give or take a typo: “jnae smtih” finds Jane Smith; “hane” does not. Words of three letters or fewer must be exact."
+        }
       }
     },
     "sections": {

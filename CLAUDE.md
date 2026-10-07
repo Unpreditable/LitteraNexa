@@ -52,6 +52,7 @@ running, any source change auto-reloads the plugin without restarting Obsidian.
 | [src/i18n/i18n.ts](src/i18n/i18n.ts) | i18next init; every user-visible string goes through `t()` |
 | [src/suggest/NoteSuggest.ts](src/suggest/NoteSuggest.ts) | `EditorSuggest` subclass: triggers on typed text, collects notes and aliases, renders rows, inserts the link |
 | [src/suggest/queries.ts](src/suggest/queries.ts) | Pure: which search texts the text before the cursor yields |
+| [src/suggest/match.ts](src/suggest/match.ts) | Pure: whether typed text matches a name or alias, word by word under the matching rule, with score and highlight ranges |
 | [src/suggest/rank.ts](src/suggest/rank.ts) | Pure: which rows to show and in what order |
 | [src/suggest/links.ts](src/suggest/links.ts) | Pure: wikilink text and alias filtering |
 | [src/suggest/scope.ts](src/suggest/scope.ts) | Pure: whether a note is in the suggested scope |

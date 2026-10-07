@@ -10,6 +10,13 @@ export type ScopeMode = "vault" | "folders";
 /** How many of a matching note's other aliases are offered as rows. */
 export type ExtraAliases = "0" | "1" | "2" | "all";
 
+/**
+ * How a typed word must fit a word of a note's name: from its start, from its first letter with
+ * letters left out, as a run of letters anywhere in it, as letters in order anywhere in it, or from
+ * its start give or take a typo.
+ */
+export type MatchRule = "prefix" | "anchored" | "substring" | "subsequence" | "typos";
+
 export interface LitteraNexaSettings {
   /** Which list below is in force. Both lists persist whichever mode is active. */
   scopeMode: ScopeMode;
@@ -29,6 +36,8 @@ export interface LitteraNexaSettings {
   inInlineMath: boolean;
   inComments: boolean;
   inFrontmatter: boolean;
+  /** Applied to each typed word separately. */
+  matchRule: MatchRule;
   extraAliases: ExtraAliases;
 }
 
@@ -36,6 +45,7 @@ export const MIN_CHARACTERS_RANGE = { min: 1, max: 6 };
 export const MAX_WORDS_RANGE = { min: 1, max: 5 };
 
 const SCOPE_MODES: readonly ScopeMode[] = ["vault", "folders"];
+export const MATCH_RULES: readonly MatchRule[] = ["prefix", "anchored", "substring", "subsequence", "typos"];
 const EXTRA_ALIASES: readonly ExtraAliases[] = ["0", "1", "2", "all"];
 
 export const DEFAULT_SETTINGS: LitteraNexaSettings = {
@@ -51,6 +61,7 @@ export const DEFAULT_SETTINGS: LitteraNexaSettings = {
   inInlineMath: false,
   inComments: false,
   inFrontmatter: false,
+  matchRule: "anchored",
   extraAliases: "all",
 };
 
@@ -74,6 +85,7 @@ export function mergeSettings(stored: unknown): LitteraNexaSettings {
     inInlineMath: bool(s.inInlineMath, d.inInlineMath),
     inComments: bool(s.inComments, d.inComments),
     inFrontmatter: bool(s.inFrontmatter, d.inFrontmatter),
+    matchRule: oneOf(s.matchRule, MATCH_RULES, d.matchRule),
     extraAliases: oneOf(s.extraAliases, EXTRA_ALIASES, d.extraAliases),
   };
 }

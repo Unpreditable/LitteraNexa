@@ -58,6 +58,12 @@ through. Folder names are compared whole: `People` does not cover `People2/`.
 - **Starts with a capital** — toggle, on. Off: every word can start a suggestion.
 - **Minimum characters** — slider 1–6, default 3.
 - **Maximum words** — slider 1–5, default 3.
+- **Matching rule** (added 2026-10-06) — dropdown: "Start of word", "First letter, then letters in
+  order" (default), "Part of word", "Letters in order", "Start of word, allowing typos". How a typed
+  word must fit a word of a note's name; the rule applies to each typed word separately, and the
+  matching itself is described in the note-suggest design. The row's description is the selected
+  option's own line with an example ("jn sm" finds Jane Smith; "an mit" does not), so the row is
+  drawn by hand like "Suggest notes from".
 - **Where suggestions appear** — a row showing the enabled sections ("Text · Code blocks") that
   opens a sub-page. The page lists "Text" (on, locked) and toggles for code blocks, inline code,
   math blocks, inline math, comments and frontmatter, all off by default. Tags, URLs and the inside
@@ -103,6 +109,7 @@ interface LitteraNexaSettings {
   inInlineMath: boolean;
   inComments: boolean;
   inFrontmatter: boolean;
+  matchRule: "prefix" | "anchored" | "substring" | "subsequence" | "typos";
   extraAliases: "0" | "1" | "2" | "all";
 }
 ```

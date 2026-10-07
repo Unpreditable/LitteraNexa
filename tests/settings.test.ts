@@ -27,6 +27,7 @@ describe("mergeSettings", () => {
       inInlineMath: true,
       inComments: true,
       inFrontmatter: true,
+      matchRule: "substring",
       extraAliases: "1",
     };
     expect(mergeSettings(saved)).toEqual(saved);
@@ -35,6 +36,10 @@ describe("mergeSettings", () => {
   it("falls back per field when a saved value has the wrong type", () => {
     const merged = mergeSettings({ scopeMode: "galaxy", capitalOnly: "yes", extraAliases: 2, maxWords: 4 });
     expect(merged).toEqual({ ...DEFAULT_SETTINGS, maxWords: 4 });
+  });
+
+  it("falls back to the default matching rule for an unknown one", () => {
+    expect(mergeSettings({ matchRule: "fuzzy" }).matchRule).toBe("anchored");
   });
 
   it("rejects numbers outside the range or not whole", () => {

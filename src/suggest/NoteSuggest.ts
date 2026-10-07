@@ -6,7 +6,6 @@ import {
   EditorSuggestContext,
   EditorSuggestTriggerInfo,
   parseFrontMatterAliases,
-  prepareFuzzySearch,
   renderResults,
   SearchResult,
   SectionCache,
@@ -15,6 +14,7 @@ import {
 } from "obsidian";
 import { extraAliasLimit, LitteraNexaSettings } from "../settings";
 import { buildLink, isLinkableAlias } from "./links";
+import { matchWords } from "./match";
 import { findQueries, Query } from "./queries";
 import { rank } from "./rank";
 import { inScope } from "./scope";
@@ -70,10 +70,10 @@ export class NoteSuggest extends EditorSuggest<NoteMatch> {
   getSuggestions(context: EditorSuggestContext): NoteMatch[] {
     const candidates = this.collectCandidates(context.file);
     const matches: NoteMatch[] = [];
+    const rule = this.settings().matchRule;
     for (const query of this.queries) {
-      const search = prepareFuzzySearch(query.text);
       for (const candidate of candidates) {
-        const result = search(candidate.text);
+        const result = matchWords(query.text, candidate.text, rule);
         if (result) matches.push({ ...candidate, query, result });
       }
     }
