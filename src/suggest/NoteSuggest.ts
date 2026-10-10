@@ -3,7 +3,6 @@ import {
   Editor,
   EditorPosition,
   EditorSuggest,
-  EditorSuggestContext,
   EditorSuggestTriggerInfo,
   parseFrontMatterAliases,
   renderResults,
@@ -34,8 +33,8 @@ interface NoteMatch extends Candidate {
 }
 
 export class NoteSuggest extends EditorSuggest<NoteMatch> {
-  /** Queries found by the last onTrigger; the context has no room for them. */
-  private queries: Query[] = [];
+  /** Rows found by the last onTrigger, which has to know whether there are any. */
+  private rows: NoteMatch[] = [];
 
   constructor(
     app: App,
@@ -46,6 +45,7 @@ export class NoteSuggest extends EditorSuggest<NoteMatch> {
   }
 
   onTrigger(cursor: EditorPosition, editor: Editor, file: TFile | null): EditorSuggestTriggerInfo | null {
+    this.rows = [];
     if (!file) return null;
     const settings = this.settings();
     const line = editor.getLine(cursor.line);
@@ -58,7 +58,11 @@ export class NoteSuggest extends EditorSuggest<NoteMatch> {
     });
     if (queries.length === 0 || (this.isNoteEditor(editor) && this.isExcluded(file, cursor.line))) return null;
 
-    this.queries = queries;
+    // Obsidian stops at the first suggester that triggers, so with nothing to show, leave the
+    // caret to the ones after this.
+    this.rows = this.findRows(queries, file);
+    if (this.rows.length === 0) return null;
+
     const startCh = queries[0].startCh;
     return {
       start: { line: cursor.line, ch: startCh },
@@ -67,11 +71,15 @@ export class NoteSuggest extends EditorSuggest<NoteMatch> {
     };
   }
 
-  getSuggestions(context: EditorSuggestContext): NoteMatch[] {
-    const candidates = this.collectCandidates(context.file);
+  getSuggestions(): NoteMatch[] {
+    return this.rows;
+  }
+
+  private findRows(queries: Query[], current: TFile): NoteMatch[] {
+    const candidates = this.collectCandidates(current);
     const matches: NoteMatch[] = [];
     const rule = this.settings().matchRule;
-    for (const query of this.queries) {
+    for (const query of queries) {
       for (const candidate of candidates) {
         const result = matchWords(query.text, candidate.text, rule);
         if (result) matches.push({ ...candidate, query, result });
