@@ -21,6 +21,7 @@ describe("mergeSettings", () => {
       capitalOnly: false,
       minCharacters: 2,
       maxWords: 5,
+      replaceLineMenus: false,
       inCodeBlocks: true,
       inInlineCode: true,
       inMathBlocks: true,
@@ -34,7 +35,13 @@ describe("mergeSettings", () => {
   });
 
   it("falls back per field when a saved value has the wrong type", () => {
-    const merged = mergeSettings({ scopeMode: "galaxy", capitalOnly: "yes", extraAliases: 2, maxWords: 4 });
+    const merged = mergeSettings({
+      scopeMode: "galaxy",
+      capitalOnly: "yes",
+      replaceLineMenus: "no",
+      extraAliases: 2,
+      maxWords: 4,
+    });
     expect(merged).toEqual({ ...DEFAULT_SETTINGS, maxWords: 4 });
   });
 

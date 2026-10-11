@@ -115,6 +115,15 @@ export class LitteraNexaSettingTab extends PluginSettingTab {
             render: (setting: Setting) => this.renderMatchRule(setting),
           },
           {
+            name: t("settings.trigger.replaceLineMenus.name"),
+            desc: t("settings.trigger.replaceLineMenus.description"),
+            control: {
+              type: "toggle",
+              key: "replaceLineMenus",
+              defaultValue: DEFAULT_SETTINGS.replaceLineMenus,
+            },
+          },
+          {
             name: t("settings.sections.heading"),
             type: "page",
             displayValue: () => sectionsSummary(this.host.settings),

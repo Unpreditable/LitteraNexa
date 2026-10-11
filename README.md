@@ -18,6 +18,21 @@ The suggestion list mimics Obsidian's behaviour as much as it can, with configur
 
 ---
 
+## Working with other plugins
+
+Obsidian shows one suggestion menu at a time. Littera Nexa never replaces a menu you opened by
+typing a trigger, such as a date menu.
+
+Tasks is different: on a task line its menu is open almost everywhere. By default Littera Nexa
+replaces it while a note matches what you type, and Tasks' menu comes back when nothing matches.
+Turn off **Replace line-wide menus** to stop that.
+
+If you would rather not see the Tasks menu everywhere in the first place, raise **Minimum match
+length for auto-suggest** in the Tasks settings to 1 or more. Tasks then opens its menu only once
+you start typing one of its keywords.
+
+---
+
 ## Troubleshooting
 
 If the list doesn't open, check these:

@@ -13,7 +13,9 @@ import {
 } from "obsidian";
 import { extraAliasLimit, LitteraNexaSettings } from "../settings";
 import { buildLink, isLinkableAlias } from "./links";
+import { menuOpen, suggestManager } from "./manager";
 import { matchWords } from "./match";
+import { leavesAlone } from "./menus";
 import { findQueries, Query } from "./queries";
 import { rank } from "./rank";
 import { inScope } from "./scope";
@@ -57,6 +59,7 @@ export class NoteSuggest extends EditorSuggest<NoteMatch> {
       inlineMath: settings.inInlineMath,
     });
     if (queries.length === 0 || (this.isNoteEditor(editor) && this.isExcluded(file, cursor.line))) return null;
+    if (this.yieldsToOpenMenu(editor, cursor.line)) return null;
 
     // Obsidian stops at the first suggester that triggers, so with nothing to show, leave the
     // caret to the ones after this.
@@ -108,8 +111,24 @@ export class NoteSuggest extends EditorSuggest<NoteMatch> {
       (this.sectionAt(context.file, line)?.type === "table" || context.editor.getLine(line).trimStart().startsWith("|"));
     const link = buildLink(target, match.file.basename, match.alias, inTable);
     const start = { line: context.start.line, ch: match.query.startCh };
+    // Closed here, not left to Obsidian: it closes a menu only after a typed keystroke, so when a
+    // suggester after this one claims the caret once the link is written, this menu would stay.
+    this.close();
     context.editor.replaceRange(link, start, context.end);
     context.editor.setCursor({ line: start.line, ch: start.ch + link.length });
+  }
+
+  /**
+   * Whether another suggester's menu is open and is to be left alone. Obsidian closes the open menu
+   * only once another suggester triggers, so it is still open while this one is asked.
+   */
+  private yieldsToOpenMenu(editor: Editor, line: number): boolean {
+    const other = suggestManager(this.app)?.currentSuggest;
+    if (!(other instanceof EditorSuggest) || other === this || menuOpen(other) !== true) return false;
+    const context = other.context;
+    if (!context) return false;
+    const menu = { sameEditor: context.editor === editor, line: context.start.line, ch: context.start.ch };
+    return leavesAlone(menu, line, this.settings().replaceLineMenus);
   }
 
   /**

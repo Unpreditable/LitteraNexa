@@ -30,6 +30,11 @@ export interface LitteraNexaSettings {
   minCharacters: number;
   /** Most words a query may span, counting the one at the cursor. */
   maxWords: number;
+  /**
+   * Whether suggestions may replace another plugin's menu that claims the whole line. A menu opened
+   * at the caret is never replaced.
+   */
+  replaceLineMenus: boolean;
   inCodeBlocks: boolean;
   inInlineCode: boolean;
   inMathBlocks: boolean;
@@ -55,6 +60,7 @@ export const DEFAULT_SETTINGS: LitteraNexaSettings = {
   capitalOnly: true,
   minCharacters: 3,
   maxWords: 3,
+  replaceLineMenus: true,
   inCodeBlocks: false,
   inInlineCode: false,
   inMathBlocks: false,
@@ -79,6 +85,7 @@ export function mergeSettings(stored: unknown): LitteraNexaSettings {
     capitalOnly: bool(s.capitalOnly, d.capitalOnly),
     minCharacters: whole(s.minCharacters, MIN_CHARACTERS_RANGE, d.minCharacters),
     maxWords: whole(s.maxWords, MAX_WORDS_RANGE, d.maxWords),
+    replaceLineMenus: bool(s.replaceLineMenus, d.replaceLineMenus),
     inCodeBlocks: bool(s.inCodeBlocks, d.inCodeBlocks),
     inInlineCode: bool(s.inInlineCode, d.inInlineCode),
     inMathBlocks: bool(s.inMathBlocks, d.inMathBlocks),

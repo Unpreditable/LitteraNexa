@@ -56,6 +56,7 @@ running, any source change auto-reloads the plugin without restarting Obsidian.
 | [src/suggest/rank.ts](src/suggest/rank.ts) | Pure: which rows to show and in what order |
 | [src/suggest/links.ts](src/suggest/links.ts) | Pure: wikilink text and alias filtering |
 | [src/suggest/scope.ts](src/suggest/scope.ts) | Pure: whether a note is in the suggested scope |
+| [src/suggest/manager.ts](src/suggest/manager.ts) | The one place that reads Obsidian's internal suggester manager; asking first and yielding to an open menu both depend on it |
 | [src/settings.ts](src/settings.ts) | Pure: settings type, defaults, validation of saved data |
 | [src/settings/settings-tab.ts](src/settings/settings-tab.ts) | Settings tab (Obsidian 1.13 declarative definitions); `folder-list.ts` draws the folder rows, `sections-page.ts` the sub-page |
 

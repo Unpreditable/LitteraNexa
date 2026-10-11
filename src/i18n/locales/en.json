@@ -88,6 +88,12 @@
           "description_comment": "Shown under the dropdown while 'Start of word, allowing typos' is selected. Examples as in the 'Start of word' description: 'jnae smtih' has two letters swapped in each word, 'hane' has the wrong first letter.",
           "description": "Each typed word begins a word of the name, give or take a typo: “jnae smtih” finds Jane Smith; “hane” does not. Words of three letters or fewer must be exact."
         }
+      },
+      "replaceLineMenus": {
+        "name_comment": "Toggle name. Obsidian shows one suggestion menu at a time. Some other plugins keep their menu open along a whole line of text; on, this plugin's suggestion list takes that menu's place while a note matches.",
+        "name": "Replace line-wide menus",
+        "description_comment": "Description of the 'Replace line-wide menus' toggle. Tasks is the name of another Obsidian plugin — do not translate it. A 'trigger' is a character the user types to open another plugin's menu on purpose, such as @ for a date menu.",
+        "description": "Some plugins, such as Tasks, keep a menu open along the whole line. When on, note suggestions replace it while a note matches. A menu you opened by typing a trigger, such as a date menu, is never replaced. Turn off to never replace another plugin's menu."
       }
     },
     "sections": {
