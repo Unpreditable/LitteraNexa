@@ -34,7 +34,14 @@ npm run build                  # TypeScript check + eslint + production bundle â
 npm test                       # Jest unit tests (pure logic only, no Obsidian API)
 npm run validate-translations  # every locale has exactly en.json's keys, none blank
 npm run release-check          # all three, in the order the Release workflow runs them
+npm run test:e2e               # build, then drive a real Obsidian through e2e/specs (see e2e/README.md)
 ```
+
+`test:e2e` runs on this machine only: it opens an Obsidian window that takes the keyboard until it
+finishes. It is not part of `release-check` or of CI. The code that runs it is the ObsidianE2EHarness
+repo, checked out beside this one; this repo holds only the specs, fixture vault and config, under
+`e2e/`. Spec files there have no imports, and must not gain any: Obsidian's review reads them as
+plugin code.
 
 **During development**: symlink this folder into `<vault>/.obsidian/plugins/littera-nexa/` and
 install the [Hot Reload](https://github.com/pjeby/hot-reload) community plugin. With `npm run dev`

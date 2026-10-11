@@ -1,0 +1,8 @@
+{
+  "appVersion": "1.14.4",
+  "installerVersion": "1.14.4",
+  "plugins": [
+    { "id": "obsidian-tasks-plugin", "version": "8.5.0" },
+    { "id": "kalendae", "version": "1.4.0" }
+  ]
+}

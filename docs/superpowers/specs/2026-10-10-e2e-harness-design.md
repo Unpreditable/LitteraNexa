@@ -1,12 +1,12 @@
-# End-to-end test harness: design
+# End-to-end tests: design
 
-Date: 2026-10-10
+Date: 2026-10-10, brought up to date with what was built on 2026-10-11
 
 ## Goal
 
 Confirm behaviour in a real Obsidian without doing it by hand. A general harness that scripts any
-behaviour, with the menus checklist (`docs/manual-tests/other-plugins-menus.md`) as its first suite.
-It runs on the developer's Windows machine only, and it must be easy to copy into another plugin.
+behaviour, with the manual checklist for other plugins' menus as its first suite. It runs on the
+developer's Windows machine only, and other plugins must be able to use it.
 
 ## Approach
 
@@ -20,153 +20,112 @@ registration, the trust prompt, the downloads, the resets and the restarts, and 
 version happens to be installed), and a runner inside Obsidian driven by the Obsidian CLI (simulated
 typing, and it needs the developer's own running Obsidian).
 
-## Layout
+## Two repos
 
-One folder, copied whole into another plugin:
+The harness is a repo of its own, `ObsidianE2EHarness`, checked out in the folder beside each
+plugin. This repo holds only what is Littera Nexa's:
 
 ```
 e2e/
-  wdio.conf.mts        generic: reads e2e.config.ts, nothing plugin-specific
-  tsconfig.json        generic
-  support/             generic helpers
-  e2e.config.ts        plugin-specific: third-party plugins and versions, Obsidian version, vault
-  vault/               plugin-specific: notes and third-party plugin settings
-  specs/               plugin-specific: the suites
-  README.md            how to run, and the steps to copy it into another plugin
+  e2e.config.json      Obsidian version, third-party plugins and their versions
+  tsconfig.json        so the specs are type-checked
+  harness.d.ts         a copy of the harness's declarations of what a spec can use
+  vault/               notes and third-party plugin settings
+  specs/               the suites
+  README.md
   .output/             gitignored: what a failed test leaves behind
-.obsidian-cache/       gitignored: Obsidian and third-party plugin downloads
 ```
 
-- The generic files are never edited per plugin. Copying means copying `e2e/`, emptying `vault/` and
-  `specs/`, and editing `e2e.config.ts`.
-- The plugin under test is the one at the repo root, its id read from `manifest.json`. No generic
-  file names it.
-- Portability is by copying the folder, not by a shared npm package.
+and one script, `"test:e2e": "npm run build && node ../ObsidianE2EHarness/bin/obsidian-e2e.mjs"`.
 
-Outside the folder, and listed in `e2e/README.md` as the copy checklist:
+It was first built as a folder to copy into each plugin. That was given up for one reason:
+Obsidian's plugin review reads every TypeScript file in a plugin's repo as plugin code. It warned
+about each Node import, each import of a test package (none is a dependency of the plugin), the
+console capture and the fixture's `.obsidian` path, and none of that can be written another way.
+What the review does not object to is a test file that imports nothing, as the Jest tests under
+`tests/` already showed. So:
 
-- the dev dependencies;
-- a `test:e2e` script in `package.json` that builds, then runs the suites;
-- `.gitignore`: `.obsidian-cache/` and `e2e/.output/` ignored, and `e2e/vault/` exempted from the
-  existing `data.json` and `.obsidian/` rules, which would otherwise drop the fixture's settings;
-- `e2e/` kept out of Jest and of the main `tsconfig`.
+- The harness, with all its imports and all the test tooling, lives where the review never looks.
+- A spec here has no imports. `describe`, `it`, `expect`, `browser` and the helpers are globals the
+  harness provides.
+- Their types are in `e2e/harness.d.ts`, a copy kept in this repo. The review type-checks the specs
+  with no harness beside them; typed from the sibling checkout, every helper call was a warning
+  there. The file depends on nothing but `obsidian`. A run refuses to start while the copy differs
+  from the harness's own.
+- This repo installs no test tooling: its `package.json` is as it was before, but for the script.
 
-`npm test` stays as it is. `test:e2e` is not part of `release-check` or of CI.
+The harness repo is private, so it is not an npm dependency: CI and the Release workflow run
+`npm ci` and could not fetch it. A plugin uses whichever version is checked out beside it; nothing
+pins one to the other yet.
 
-## Third-party plugins
+`npm test` stays as it is. `test:e2e` is not part of `release-check` or of CI. `eslint.config.mjs`
+names `e2e/tsconfig.json` and `tsconfig.test.json` as projects, so files outside `src/` show no
+parsing error in the editor; `npm run lint` still covers `src/` only.
 
-`e2e.config.ts` names each plugin by its community id and a pinned version. The service downloads
-them into `.obsidian-cache/` and reuses them, so a run touches the network only when something is
-missing or its version changed. To confirm when planning: the field that pins a community plugin's
-version. If the service cannot pin one, that is raised before going further.
+## What the harness gives a spec
 
-The Obsidian app and installer versions are pinned in the same file.
+Its README is the reference. In short:
+
+- `openEmptyNote()`, `type(text)`, `press(key)` with real key events; `line()`, `noteText()`.
+- `menu()`: `null` when no menu shows, otherwise `{ owner, rows }`, once the menu has stopped
+  changing. The owner is found by matching the open suggester's source text against each known
+  plugin's `main.js`; anything else is `"obsidian"`.
+- `setPluginSettings(id, patch)`, `togglePlugin(id)`, `restartObsidian()`, `suggesters()`.
+- Before each `describe`, vault files and plugin settings go back to the fixture.
+- After each test, any error in Obsidian's console fails it, unless the test called
+  `allowConsoleErrors()`. Errors from setup and from Obsidian starting count against the next test.
+- A failed test or hook leaves a screenshot, the console log and the suggester order in
+  `e2e/.output/`.
+- The plugin under test is installed from its build alone, so the `data.json` at this repo's root
+  never reaches the test vault.
+
+## Pinned versions
+
+In `e2e/e2e.config.json`: Obsidian 1.14.4 (app and installer), Tasks 8.5.0, Kalendae 1.4.0. The
+harness downloads them once into its own `.obsidian-cache/`, shared by every plugin it tests.
 
 ## Vault
 
-`e2e/vault/` is checked in. Each run opens a copy of it, so a failed run cannot leave the fixture
-changed. It holds only what the specs name:
+`e2e/vault/` is checked in. Each run opens a copy of it. It holds only what the specs name:
 
-- the notes: *Jane* and *Monica* in a folder in scope, and nothing starting with `Zzz`;
-- a `data.json` for each third-party plugin with the settings the suite relies on: Tasks' minimum
+- the notes: *Jane* and *Monica* in `People/`, *Robert Stone* there too with the alias *Bob*,
+  *Zelda* in `Archive/`, and nothing starting with `Zzz`;
+- a `data.json` for each third-party plugin with the settings the suites rely on: Tasks' minimum
   match length at 0, Kalendae's type-to-insert on with trigger `@`;
-- no `data.json` for the plugin under test, so it starts at its defaults.
+- no `data.json` for Littera Nexa, so it starts at its defaults;
+- `.obsidian/.gitkeep`: the vault must have its `.obsidian` folder, or the harness stops the run.
 
-## Helpers
+## The suites
 
-A small fixed set in `support/`, none of which knows the plugin under test. A helper specific to
-one plugin goes beside its specs.
-
-| Helper | What it does |
-|---|---|
-| `openEmptyNote()` | Creates a scratch note, opens it, puts the caret in the editor |
-| `type(text)`, `press(key)` | Sends real key events, one character at a time |
-| `menu()` | `null` when no menu shows, otherwise `{ owner, rows }` |
-| `line()`, `noteText()` | Reads the caret's line, or the whole note |
-| `setPluginSettings(id, patch)` | Changes a plugin's settings through its own save path, no restart |
-| `togglePlugin(id)`, `restartObsidian()` | For load order |
-| `consoleErrors()` | The errors logged since the test began |
-
-- `menu()` polls until the menu state stops changing; no spec sleeps for a fixed time. "No menu" is
-  the state staying empty for the settle period.
-- Every test fails on a console error unless it opts out.
-
-### Naming the owner of a menu
-
-Obsidian does not record which plugin registered a suggester, and third-party class names are
-minified. The plan starts with a spike to prove one of these, in order:
-
-1. match the open suggester against the suggesters each plugin registered, read from Obsidian's
-   internals at startup;
-2. a per-plugin recogniser in `e2e.config.ts`, such as a CSS class on the menu's rows.
-
-If neither holds, specs assert on `rows` alone, and that is raised before it is settled for.
-
-## A spec
-
-One `it` per checklist row, carrying the row's number:
-
-```ts
-describe("Tasks: a line-wide menu is replaced while a note matches", () => {
-  beforeEach(() => openEmptyNote());
-
-  it("3.2 replaces Tasks' menu at the n", async () => {
-    await type("- [ ] call Ja");
-    expect(await menu()).toMatchObject({ owner: "obsidian-tasks-plugin" });
-    await type("n");
-    expect(await menu()).toMatchObject({ owner: "littera-nexa", rows: ["Jane"] });
-  });
-});
-```
-
-## State between tests
-
-| Level | When | Cost |
-|---|---|---|
-| Fresh scratch note | Before every test | Milliseconds |
-| Vault files and plugin settings back to the fixture | Before every `describe` | Under a second |
-| Obsidian restarted on a new copy of the vault | Only in suites that ask for it | 10–20 s |
-
-A test that changes a setting does not undo it. Suites run one after another in a single window:
-parallel windows would take keyboard focus from each other.
-
-## Failures
-
-A failed test leaves in `e2e/.output/`: a screenshot from the moment of failure, the console log of
-that test, and the registered suggesters in asking order.
-
-## Running
-
-- `npm run test:e2e` builds, then runs everything.
-- `npm run test:e2e -- --spec menus` runs one file.
-- The Obsidian window is visible and takes keyboard focus for the length of the run. The first run
-  also downloads Obsidian and the plugins.
-
-## The first suite
-
-`e2e/specs/menus.e2e.ts`, from `docs/manual-tests/other-plugins-menus.md`:
+`e2e/specs/menus.e2e.ts` is the manual checklist for other plugins' menus, which it replaced, one
+test per row and carrying the row's number:
 
 | Checklist section | In the suite | Note |
 |---|---|---|
 | 1. Plain text | All 4 rows | |
 | 2. Kalendae | All 6 rows, and the `@@` repeat | Trigger changed through `setPluginSettings` |
 | 3. Tasks | 3.1 to 3.6 | |
-| 3.7 `call @Jan` | Reported, not asserted | No fixed answer: prints which menu showed, always passes |
+| 3.7 `call @Jan` | Reported, not asserted | No fixed answer. As built: Tasks at `call @Ja`, Littera Nexa at `call @Jan` |
 | 4. The setting | All 4 rows, and "applies without a reload" | |
 | 5. Load order | All 4 steps | The part that restarts Obsidian |
-| 6.1 Table cell | In | If it proves unreliable, that is raised, not dropped |
+| 6.1 Table cell | In | |
 | 6.2 Two panes | In | |
 | 6.3 Console errors | Covered by every test | |
 
-No other suite is written now.
+`e2e/specs/suggest.e2e.ts` covers what Littera Nexa does by itself and only inside Obsidian: the
+link a picked row writes (Enter, click, a name of several words, an alias, a table cell), when the
+list appears (minimum characters, the capital rule, the matching rule, the note being written in),
+inline code and code blocks, and folder scope.
 
-## Also in scope
+## Known gaps
 
-- `CLAUDE.md`: `test:e2e` added to the Commands block, with a note that it runs on this machine only
-  and is not part of `release-check`.
-- `docs/manual-tests/other-plugins-menus.md` deleted once the suite passes.
+- No suite covers frontmatter, comments, math, the extra-aliases setting, the settings tab's own
+  controls, or mobile.
+- Only the type file ties this repo to a version of the harness: a helper that keeps its shape but
+  changes what it does can break these suites without anything here changing.
+- A run is sensitive to the Obsidian window losing focus. Leave the machine alone while it runs.
 
 ## Out of scope
 
 - `README.md`: user-facing, not touched.
-- CI, `release-check`, a shared npm package, any suite beyond the menus checklist.
+- CI and `release-check`.
