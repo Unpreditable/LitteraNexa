@@ -13,11 +13,11 @@ const JANE = { owner: LN, rows: ["Jane"] };
 /**
  * Opens a note with the caret at the end of one of its lines. With `text`, the note is created
  * first, and opened only once Obsidian has indexed it: where a code block starts and ends comes
- * from that index.
+ * from that index. The note opens in live preview unless `sourceMode` is set.
  */
-async function openNote(path: string, atLine: number, text?: string): Promise<void> {
+async function openNote(path: string, atLine: number, text?: string, sourceMode = false): Promise<void> {
   await browser.executeObsidian(
-    async ({ app }, path, atLine, text) => {
+    async ({ app }, path, atLine, text, sourceMode) => {
       app.workspace.detachLeavesOfType("markdown");
       if (text !== null) {
         const created = await app.vault.create(path, text);
@@ -29,7 +29,7 @@ async function openNote(path: string, atLine: number, text?: string): Promise<vo
       const file = app.vault.getFileByPath(path);
       if (!file) throw new Error(`no note at ${path}`);
       const leaf = app.workspace.getLeaf(false);
-      await leaf.openFile(file, { state: { mode: "source", source: false } });
+      await leaf.openFile(file, { state: { mode: "source", source: sourceMode } });
       app.workspace.setActiveLeaf(leaf, { focus: true });
       const editor = app.workspace.activeEditor?.editor;
       if (!editor) throw new Error(`no editor after opening ${path}`);
@@ -39,6 +39,7 @@ async function openNote(path: string, atLine: number, text?: string): Promise<vo
     path,
     atLine,
     text ?? null,
+    sourceMode,
   );
 }
 
@@ -86,6 +87,78 @@ describe("Picking a note writes a link", () => {
       timeoutMsg: "the note never held the link with an escaped bar",
     });
   });
+
+  it("writes a link by name into a table cell", async () => {
+    await openNote("Grid.md", 0, "| a | b |\n| --- | --- |\n|  |  |\n");
+    const cell = $(".markdown-source-view.is-live-preview .cm-table-widget tbody td");
+    await cell.waitForExist();
+    await cell.click();
+    await type("Jan");
+    expect(await menu()).toEqual(JANE);
+    await press("Enter");
+    await browser.waitUntil(async () => (await noteText()).includes("[[Jane]]"), {
+      timeoutMsg: "the note never held the link",
+    });
+  });
+
+  it("escapes the bar itself in a table in source mode", async () => {
+    await openNote("Source grid.md", 2, "| a | b |\n| --- | --- |\n| ", true);
+    await type("Bob");
+    expect(await menu()).toMatchObject({ owner: LN, rows: ["Bob", "Robert Stone"] });
+    await press("Enter");
+    expect(await line()).toBe("| [[Robert Stone\\|Bob]]");
+  });
+});
+
+describe("Links that need a path", () => {
+  beforeEach(async () => {
+    await resetState();
+    await openEmptyNote();
+  });
+
+  it("carries the path and displays the bare name when two notes share a name", async () => {
+    await type("Dan");
+    expect(await menu()).toEqual({ owner: LN, rows: ["Dana", "Dana"] });
+    // Down to one row, so which note Enter picks is known.
+    await setPluginSettings(LN, { excludedFolders: [{ path: "Archive", subfolders: true }] });
+    await press("Backspace");
+    await type("n");
+    expect(await menu()).toEqual({ owner: LN, rows: ["Dana"] });
+    await press("Enter");
+    expect(await line()).toBe("[[People/Dana|Dana]]");
+  });
+});
+
+describe("Alias rows", () => {
+  beforeEach(async () => {
+    await resetState();
+    await openEmptyNote();
+  });
+
+  it("offers a note's other aliases, but none that cannot be a link's display text", async () => {
+    await type("Que");
+    expect(await menu()).toEqual({ owner: LN, rows: ["Quentin Vale", "Skipper", "Captain", "Chief"] });
+  });
+
+  it("offers as many extra aliases as the setting allows", async () => {
+    await setPluginSettings(LN, { extraAliases: "2" });
+    await type("Que");
+    expect(await menu()).toEqual({ owner: LN, rows: ["Quentin Vale", "Skipper", "Captain"] });
+    await setPluginSettings(LN, { extraAliases: "1" });
+    await press("Backspace");
+    await type("e");
+    expect(await menu()).toEqual({ owner: LN, rows: ["Quentin Vale", "Skipper"] });
+    await setPluginSettings(LN, { extraAliases: "0" });
+    await press("Backspace");
+    await type("e");
+    expect(await menu()).toEqual({ owner: LN, rows: ["Quentin Vale"] });
+  });
+
+  it("still shows a typed alias and its note with no extra aliases", async () => {
+    await setPluginSettings(LN, { extraAliases: "0" });
+    await type("Ski");
+    expect(await menu()).toEqual({ owner: LN, rows: ["Skipper", "Quentin Vale"] });
+  });
 });
 
 describe("When the list appears", () => {
@@ -126,6 +199,70 @@ describe("When the list appears", () => {
     await type("Jan");
     expect(await menu()).toBeNull();
   });
+
+  it("looks back no further than the maximum number of words, which is a setting", async () => {
+    await setPluginSettings(LN, { maxWords: 1 });
+    await type("Robert Sto");
+    expect(await menu()).toEqual({ owner: LN, rows: ["Robert Stone", "Bob"] });
+    await press("Enter");
+    expect(await line()).toBe("Robert [[Robert Stone]]");
+  });
+
+  it("stays closed after a tag's #", async () => {
+    await type("#Jan");
+    // Obsidian may show its own tag menu here; only this plugin's list must not.
+    expect((await menu())?.owner).not.toBe(LN);
+  });
+
+  it("stays closed inside a URL", async () => {
+    await type("http://x.com/Jan");
+    expect(await menu()).toBeNull();
+  });
+
+  it("stays closed while a letter follows the caret", async () => {
+    await type("x");
+    await press("ArrowLeft");
+    await type("Jan");
+    expect(await menu()).toBeNull();
+    await press("Delete");
+    await press("Backspace");
+    await type("n");
+    expect(await menu()).toEqual(JANE);
+  });
+});
+
+describe("The other matching rules", () => {
+  beforeEach(async () => {
+    await resetState();
+    await openEmptyNote();
+  });
+
+  it("wants every letter in a row under the prefix rule", async () => {
+    await type("Jne");
+    expect(await menu()).toEqual(JANE);
+    await setPluginSettings(LN, { matchRule: "prefix" });
+    await press("Backspace");
+    await type("e");
+    expect(await menu()).toBeNull();
+  });
+
+  it("finds letters in order anywhere in a word under the subsequence rule", async () => {
+    await type("Onc");
+    expect(await menu()).toBeNull();
+    await setPluginSettings(LN, { matchRule: "subsequence" });
+    await press("Backspace");
+    await type("c");
+    expect(await menu()).toEqual({ owner: LN, rows: ["Monica"] });
+  });
+
+  it("forgives swapped letters under the typos rule", async () => {
+    await type("Jnae");
+    expect(await menu()).toBeNull();
+    await setPluginSettings(LN, { matchRule: "typos" });
+    await press("Backspace");
+    await type("e");
+    expect(await menu()).toEqual(JANE);
+  });
 });
 
 describe("Where the list is held back", () => {
@@ -146,6 +283,47 @@ describe("Where the list is held back", () => {
     await type("Jan");
     expect(await menu()).toBeNull();
     await setPluginSettings(LN, { inCodeBlocks: true });
+    await press("Backspace");
+    await type("n");
+    expect(await menu()).toEqual(JANE);
+  });
+
+  it("stays out of inline math unless the setting allows it", async () => {
+    await openEmptyNote();
+    await type("$Jan");
+    expect(await menu()).toBeNull();
+    await setPluginSettings(LN, { inInlineMath: true });
+    await press("Backspace");
+    await type("n");
+    expect(await menu()).toEqual(JANE);
+  });
+
+  it("stays out of a math block unless the setting allows it", async () => {
+    await openNote("Math.md", 1, "$$\n\n$$\n");
+    await type("Jan");
+    expect(await menu()).toBeNull();
+    await setPluginSettings(LN, { inMathBlocks: true });
+    await press("Backspace");
+    await type("n");
+    expect(await menu()).toEqual(JANE);
+  });
+
+  it("stays out of a comment unless the setting allows it", async () => {
+    await openNote("Comment.md", 1, "%%\n\n%%\n");
+    await type("Jan");
+    expect(await menu()).toBeNull();
+    await setPluginSettings(LN, { inComments: true });
+    await press("Backspace");
+    await type("n");
+    expect(await menu()).toEqual(JANE);
+  });
+
+  it("stays out of frontmatter unless the setting allows it", async () => {
+    // In source mode: live preview shows frontmatter as the Properties widget, not as text.
+    await openNote("Properties.md", 1, "---\ntitle: \n---\n", true);
+    await type("Jan");
+    expect(await menu()).toBeNull();
+    await setPluginSettings(LN, { inFrontmatter: true });
     await press("Backspace");
     await type("n");
     expect(await menu()).toEqual(JANE);
@@ -172,6 +350,22 @@ describe("Which notes are suggested", () => {
   it("suggests only from the selected folders in that mode", async () => {
     await setPluginSettings(LN, { scopeMode: "folders", includedFolders: [{ path: "People", subfolders: true }] });
     await type("Zel");
+    expect(await menu()).toBeNull();
+    await type(" Jan");
+    expect(await menu()).toEqual(JANE);
+  });
+
+  it("leaves out only the folder's own notes when its subfolders are not excluded", async () => {
+    await setPluginSettings(LN, { excludedFolders: [{ path: "People", subfolders: false }] });
+    await type("Jan");
+    expect(await menu()).toBeNull();
+    await type(" Wen");
+    expect(await menu()).toEqual({ owner: LN, rows: ["Wendy"] });
+  });
+
+  it("suggests only the folder's own notes when its subfolders are not included", async () => {
+    await setPluginSettings(LN, { scopeMode: "folders", includedFolders: [{ path: "People", subfolders: false }] });
+    await type("Wen");
     expect(await menu()).toBeNull();
     await type(" Jan");
     expect(await menu()).toEqual(JANE);

@@ -18,7 +18,7 @@ Each ends with a line to read at a glance; `test:all` with two:
 
 ```
 unitTests: 85/85 pass; 15s
-e2e: 44/44 pass; 1m 28s
+e2e: 69/69 pass; 2m 26s
 ```
 
 An Obsidian window opens and takes the keyboard until the run ends, so leave the machine alone
@@ -32,6 +32,7 @@ meanwhile.
 | `vault/` | The notes and third-party plugin settings every run starts from |
 | `specs/menus.e2e.ts` | How the list behaves beside Tasks', Kalendae's and Obsidian's own menus |
 | `specs/suggest.e2e.ts` | What the plugin does by itself: when the list appears, and what picking a row writes |
+| `specs/settings.e2e.ts` | The settings tab, clicked through: the folder rows and the large-vault warning |
 | `tsconfig.json` | Type-checks the specs |
 | `harness.d.ts` | The harness's declarations of everything a spec can use. A copy: do not edit it |
 
