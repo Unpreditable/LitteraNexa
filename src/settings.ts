@@ -43,6 +43,8 @@ export interface LitteraNexaSettings {
   inFrontmatter: boolean;
   /** Applied to each typed word separately. */
   matchRule: MatchRule;
+  /** The first typed word must fit the first word of a name or alias, not a later one. */
+  firstWordOnly: boolean;
   extraAliases: ExtraAliases;
 }
 
@@ -68,6 +70,7 @@ export const DEFAULT_SETTINGS: LitteraNexaSettings = {
   inComments: false,
   inFrontmatter: false,
   matchRule: "anchored",
+  firstWordOnly: true,
   extraAliases: "all",
 };
 
@@ -93,6 +96,7 @@ export function mergeSettings(stored: unknown): LitteraNexaSettings {
     inComments: bool(s.inComments, d.inComments),
     inFrontmatter: bool(s.inFrontmatter, d.inFrontmatter),
     matchRule: oneOf(s.matchRule, MATCH_RULES, d.matchRule),
+    firstWordOnly: bool(s.firstWordOnly, d.firstWordOnly),
     extraAliases: oneOf(s.extraAliases, EXTRA_ALIASES, d.extraAliases),
   };
 }

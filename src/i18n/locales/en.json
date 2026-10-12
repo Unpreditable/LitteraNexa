@@ -89,6 +89,12 @@
           "description": "Each typed word begins a word of the name, give or take a typo: “jnae smtih” finds Jane Smith; “hane” does not. Words of three letters or fewer must be exact."
         }
       },
+      "firstWordOnly": {
+        "name_comment": "Toggle name. On: what the user types must begin with the first word of a note's name or alias. Off: it may begin with any word of it, so typing a surname finds 'Jane Smith'.",
+        "name": "Match from the first word",
+        "description_comment": "Description of the 'Match from the first word' toggle.",
+        "description": "Turn off to also find a note by a later word, such as a surname."
+      },
       "replaceLineMenus": {
         "name_comment": "Toggle name. Obsidian shows one suggestion menu at a time. Some other plugins keep their menu open along a whole line of text; on, this plugin's suggestion list takes that menu's place while a note matches.",
         "name": "Replace line-wide menus",

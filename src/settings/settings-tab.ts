@@ -115,6 +115,11 @@ export class LitteraNexaSettingTab extends PluginSettingTab {
             render: (setting: Setting) => this.renderMatchRule(setting),
           },
           {
+            name: t("settings.trigger.firstWordOnly.name"),
+            desc: t("settings.trigger.firstWordOnly.description"),
+            control: { type: "toggle", key: "firstWordOnly", defaultValue: DEFAULT_SETTINGS.firstWordOnly },
+          },
+          {
             name: t("settings.trigger.replaceLineMenus.name"),
             desc: t("settings.trigger.replaceLineMenus.description"),
             control: {

@@ -29,6 +29,7 @@ describe("mergeSettings", () => {
       inComments: true,
       inFrontmatter: true,
       matchRule: "substring",
+      firstWordOnly: false,
       extraAliases: "1",
     };
     expect(mergeSettings(saved)).toEqual(saved);
@@ -39,6 +40,7 @@ describe("mergeSettings", () => {
       scopeMode: "galaxy",
       capitalOnly: "yes",
       replaceLineMenus: "no",
+      firstWordOnly: 0,
       extraAliases: 2,
       maxWords: 4,
     });
@@ -47,6 +49,11 @@ describe("mergeSettings", () => {
 
   it("falls back to the default matching rule for an unknown one", () => {
     expect(mergeSettings({ matchRule: "fuzzy" }).matchRule).toBe("anchored");
+  });
+
+  it("matches from the first word only unless saved off", () => {
+    expect(mergeSettings({}).firstWordOnly).toBe(true);
+    expect(mergeSettings({ firstWordOnly: false }).firstWordOnly).toBe(false);
   });
 
   it("rejects numbers outside the range or not whole", () => {

@@ -89,6 +89,12 @@
           "description": ""
         }
       },
+      "firstWordOnly": {
+        "name_comment": "Toggle name. On: what the user types must begin with the first word of a note's name or alias. Off: it may begin with any word of it, so typing a surname finds 'Jane Smith'.",
+        "name": "",
+        "description_comment": "Description of the 'Match from the first word' toggle.",
+        "description": ""
+      },
       "replaceLineMenus": {
         "name_comment": "Toggle name. Obsidian shows one suggestion menu at a time. Some other plugins keep their menu open along a whole line of text; on, this plugin's suggestion list takes that menu's place while a note matches.",
         "name": "",

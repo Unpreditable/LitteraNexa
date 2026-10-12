@@ -30,11 +30,12 @@ const SCATTERED = 0;
  * Matches typed text against a note name or alias, word by word: every typed word must fit a
  * different word of the name, in the name's order, and words of the name may be skipped. Words are
  * split on whitespace only, so typed letters never match across a space. `rule` says what fitting a
- * word means, and applies to each word on its own.
+ * word means, and applies to each word on its own. With `firstWordOnly`, the first typed word must
+ * fit the name's first word, so only later words of the name may be skipped.
  *
  * The score puts tighter fits first, then names with fewer unmatched words, then shorter names.
  */
-export function matchWords(query: string, text: string, rule: MatchRule): WordMatch | null {
+export function matchWords(query: string, text: string, rule: MatchRule, firstWordOnly: boolean): WordMatch | null {
   const typed = fold(query).split(/\s+/).filter(Boolean);
   const words = splitWords(text);
   if (typed.length === 0 || typed.length > words.length) return null;
@@ -48,6 +49,8 @@ export function matchWords(query: string, text: string, rule: MatchRule): WordMa
   for (let i = typed.length - 1; i >= 0; i--) {
     for (let j = words.length - 1; j >= 0; j--) best[i][j] = Math.max(taking(i, j), bestAt(i, j + 1));
   }
+  // No other cell reads this one, so it alone decides whether the name's first word is taken.
+  if (firstWordOnly) best[0][0] = taking(0, 0);
   if (best[0][0] === -Infinity) return null;
 
   // Walked from the start, so of equally tight ways the one using the earlier words is taken.

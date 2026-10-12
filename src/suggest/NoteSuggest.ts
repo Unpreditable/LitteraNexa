@@ -81,10 +81,10 @@ export class NoteSuggest extends EditorSuggest<NoteMatch> {
   private findRows(queries: Query[], current: TFile): NoteMatch[] {
     const candidates = this.collectCandidates(current);
     const matches: NoteMatch[] = [];
-    const rule = this.settings().matchRule;
+    const { matchRule, firstWordOnly } = this.settings();
     for (const query of queries) {
       for (const candidate of candidates) {
-        const result = matchWords(query.text, candidate.text, rule);
+        const result = matchWords(query.text, candidate.text, matchRule, firstWordOnly);
         if (result) matches.push({ ...candidate, query, result });
       }
     }

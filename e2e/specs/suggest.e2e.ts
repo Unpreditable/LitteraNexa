@@ -194,6 +194,15 @@ describe("When the list appears", () => {
     expect(await menu()).toEqual(JANE);
   });
 
+  it("matches from a name's first word by default, and from a later one with Match from the first word off", async () => {
+    await type("Sto");
+    expect(await menu()).toBeNull();
+    await setPluginSettings(LN, { firstWordOnly: false });
+    await press("Backspace");
+    await type("o");
+    expect(await menu()).toEqual({ owner: LN, rows: ["Robert Stone", "Bob"] });
+  });
+
   it("does not offer the note being written in", async () => {
     await openNote("People/Jane.md", 1);
     await type("Jan");
@@ -201,7 +210,8 @@ describe("When the list appears", () => {
   });
 
   it("looks back no further than the maximum number of words, which is a setting", async () => {
-    await setPluginSettings(LN, { maxWords: 1 });
+    // With one word to go on, the name is found by its second word.
+    await setPluginSettings(LN, { maxWords: 1, firstWordOnly: false });
     await type("Robert Sto");
     expect(await menu()).toEqual({ owner: LN, rows: ["Robert Stone", "Bob"] });
     await press("Enter");

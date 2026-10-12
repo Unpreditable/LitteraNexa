@@ -2,10 +2,13 @@ import { MatchRule } from "../src/settings";
 import { matchWords } from "../src/suggest/match";
 
 const RULES: MatchRule[] = ["prefix", "anchored", "substring", "subsequence"];
-const hit = (query: string, text: string, rule: MatchRule = "anchored") => matchWords(query, text, rule) !== null;
-const ranges = (query: string, text: string, rule: MatchRule = "anchored") => matchWords(query, text, rule)?.matches;
-const score = (query: string, text: string, rule: MatchRule = "anchored") => {
-  const result = matchWords(query, text, rule);
+// From any word of the name unless a test says otherwise: most rules here are about later words too.
+const hit = (query: string, text: string, rule: MatchRule = "anchored", firstWordOnly = false) =>
+  matchWords(query, text, rule, firstWordOnly) !== null;
+const ranges = (query: string, text: string, rule: MatchRule = "anchored", firstWordOnly = false) =>
+  matchWords(query, text, rule, firstWordOnly)?.matches;
+const score = (query: string, text: string, rule: MatchRule = "anchored", firstWordOnly = false) => {
+  const result = matchWords(query, text, rule, firstWordOnly);
   if (!result) throw new Error(`${query} does not match ${text}`);
   return result.score;
 };
@@ -129,6 +132,36 @@ describe("matchWords", () => {
       expect(score("elziabeth", "Elizabeth", "typos")).toBeGreaterThan(score("elziabteh", "Elizabeth", "typos"));
       // A plain start of a later word beats a typo in an earlier one.
       expect(ranges("mara", "Mary Mara", "typos")).toEqual([[5, 9]]);
+    });
+  });
+
+  describe("from the first word only", () => {
+    it("needs the first typed word to fit the name's first word", () => {
+      for (const rule of [...RULES, "typos"] as MatchRule[]) {
+        expect(hit("smith", "Jane Smith", rule, true)).toBe(false);
+        expect(hit("jane", "Jane Smith", rule, true)).toBe(true);
+        expect(hit("jane smith", "Jane Smith", rule, true)).toBe(true);
+      }
+      expect(hit("marie smith", "Jane Marie Smith", "anchored", true)).toBe(false);
+    });
+
+    it("still skips words of the name after the first", () => {
+      expect(hit("ja sm", "Jane Marie Smith", "anchored", true)).toBe(true);
+    });
+
+    it("fits the first word by the rule, however loosely", () => {
+      expect(hit("jn", "Jane Smith", "anchored", true)).toBe(true);
+      expect(hit("ane", "Jane Smith", "substring", true)).toBe(true);
+      expect(hit("jn", "Jane Smith", "prefix", true)).toBe(false);
+    });
+
+    it("takes the first word even when a later one fits tighter", () => {
+      expect(ranges("sm", "Sam Smith", "anchored", true)).toEqual([
+        [0, 1],
+        [2, 3],
+      ]);
+      expect(score("sm", "Sam Smith", "anchored", true)).toBeLessThan(score("sm", "Sam Smith"));
+      expect(ranges("ann", "Anna Ann", "anchored", true)).toEqual([[0, 3]]);
     });
   });
 
