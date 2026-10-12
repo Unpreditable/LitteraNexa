@@ -11,6 +11,14 @@ the helpers a spec can use and what to look at when a test fails.
 ```bash
 npm run test:e2e                    # build the plugin, then run every spec
 npm run test:e2e -- --spec menus    # only the spec files whose path contains "menus"
+npm run test:all                    # the unit tests, then every spec
+```
+
+Each ends with a line to read at a glance; `test:all` with two:
+
+```
+unitTests: 85/85 pass; 15s
+e2e: 44/44 pass; 1m 28s
 ```
 
 An Obsidian window opens and takes the keyboard until the run ends, so leave the machine alone

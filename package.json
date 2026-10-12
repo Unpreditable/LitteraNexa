@@ -10,7 +10,8 @@
     "release-check": "npm run validate-translations && npm run build && npm test",
     "lint": "eslint src/",
     "test": "jest --passWithNoTests",
-    "test:e2e": "npm run build && node ../ObsidianE2EHarness/bin/obsidian-e2e.mjs"
+    "test:e2e": "npm run build && node ../ObsidianE2EHarness/bin/obsidian-e2e.mjs",
+    "test:all": "npm run build && node ../ObsidianE2EHarness/bin/obsidian-test-all.mjs"
   },
   "keywords": [],
   "author": "Vitaly Ditman",
