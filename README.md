@@ -4,7 +4,7 @@ Link to a note by typing its name. No `[[` needed.
 
 > *Littera nexa* — Latin for "the linked letter".
 
-![Typing Jane, with suggestions for the alias Jane and the note Jane Smith](assets/suggestions.png)
+![Typing Jan and picking the alias Jane inserts [[Jane Smith|Jane]]; typing Smith and picking Jane Smith inserts [[Jane Smith]]](assets/demo.gif)
 
 A convenience function that removes the need to type `[[` before creating a wikilink. Common use
 cases:
@@ -42,6 +42,13 @@ If the list doesn't open, check these:
  - The cursor is in a section that is switched off, e.g. a code block
  - The cursor is in the middle of a word
  - The note is the one you are editing, which is never offered
+
+---
+
+## More plugins by the author
+
+- **[GTD Tasks](https://community.obsidian.md/plugins/gtd-tasks)** — Gather tasks from across your notes into one sidebar, sorted into the Getting Things Done horizons: Today, This Week, Next Week, This Month and Someday. Works with the Tasks plugin.
+- **[Kalendae](https://community.obsidian.md/plugins/kalendae)** — Change any date or time in a note with a calendar or a clock instead of retyping it. Type new dates in plain words (`@next friday`), or step them with Ctrl/Option + ↑/↓.
 
 ---
 

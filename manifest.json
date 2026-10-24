@@ -3,7 +3,7 @@
   "name": "Littera Nexa",
   "version": "1.2.0",
   "minAppVersion": "1.13.0",
-  "description": "Type the start of a note's name and link to it.",
+  "description": "Link to a note by typing its name, with no [[ needed. It suggests notes and aliases as you type.",
   "author": "Vitaly Ditman",
   "authorUrl": "https://github.com/Unpreditable",
   "isDesktopOnly": false
