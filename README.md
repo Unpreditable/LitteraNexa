@@ -49,6 +49,7 @@ If the list doesn't open, check these:
 
 - **[GTD Tasks](https://community.obsidian.md/plugins/gtd-tasks)** — Gather tasks from across your notes into one sidebar, sorted into the Getting Things Done horizons: Today, This Week, Next Week, This Month and Someday. Works with the Tasks plugin.
 - **[Kalendae](https://community.obsidian.md/plugins/kalendae)** — Change any date or time in a note with a calendar or a clock instead of retyping it. Type new dates in plain words (`@next friday`), or step them with Ctrl/Option + ↑/↓.
+- **[LeapFrog](https://community.obsidian.md/plugins/leapfrog)** — Jump to the top or bottom of a note in one click, with floating buttons or commands, and back again.
 
 ---
 
