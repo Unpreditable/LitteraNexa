@@ -6,6 +6,8 @@ export interface Candidate {
   text: string;
   /** The alias this candidate is, or null for the note's name. */
   alias: string | null;
+  /** A folder row, which a note of the same name and score goes before. */
+  isFolder?: boolean;
 }
 
 export interface Rankable extends Candidate {
@@ -105,5 +107,9 @@ function words(text: string): string[] {
 // Scores from queries of different lengths aren't comparable, so the note covering more of the typed
 // text goes first and the score only settles notes found by the same length of query.
 function compareAcrossNotes(a: Rankable, b: Rankable): number {
-  return b.query.text.length - a.query.text.length || b.result.score - a.result.score;
+  return (
+    b.query.text.length - a.query.text.length ||
+    b.result.score - a.result.score ||
+    Number(a.isFolder ?? false) - Number(b.isFolder ?? false)
+  );
 }

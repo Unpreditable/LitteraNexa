@@ -1,6 +1,6 @@
 # Littera Nexa
 
-Link to a note by typing its name. No `[[` needed.
+Link to a note or folder by typing its name. No `[[` needed.
 
 > *Littera nexa* — Latin for "the linked letter".
 
@@ -12,9 +12,22 @@ cases:
 - Linking to the same notes frequently, e.g. notes from a People folder
 - Auto-suggesting a link when you forgot to link
 - Helping fast typers who mistype `[{Jane` and don't get any suggestions from Obsidian
+- Linking to a folder, which reveals it in the file explorer instead of creating an empty note
 
 The suggestion list mimics Obsidian's behaviour as much as it can, with configurable elements under
 **Settings → Littera Nexa**.
+
+---
+
+## Folder links
+
+Link to folders, not just notes. Type a folder's name, pick it from the list, and get
+`[[Clients/|Clients]]`. Click the link and the folder opens in the file explorer. No empty note
+gets created along the way.
+
+Any link ending in a slash works the same, including ones you type yourself:
+`[[Projects/Clients/]]`. Folders follow the same scope as notes. Turn off **Suggest folders** to
+see notes only.
 
 ---
 
@@ -42,6 +55,7 @@ If the list doesn't open, check these:
  - The cursor is in a section that is switched off, e.g. a code block
  - The cursor is in the middle of a word
  - The note is the one you are editing, which is never offered
+ - For a folder: **Suggest folders** is off, or the folder is outside the folders you selected
 
 ---
 

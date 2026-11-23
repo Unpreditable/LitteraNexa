@@ -5,7 +5,11 @@ export type ScopeSettings = Pick<LitteraNexaSettings, "scopeMode" | "includedFol
 /** Whether the note at this vault path is one to suggest. */
 export function inScope(notePath: string, settings: ScopeSettings): boolean {
   const slash = notePath.lastIndexOf("/");
-  const folder = slash < 0 ? "" : notePath.slice(0, slash);
+  return folderInScope(slash < 0 ? "" : notePath.slice(0, slash), settings);
+}
+
+/** Whether a note sitting directly in `folder` ("" for the vault root) would be suggested. */
+export function folderInScope(folder: string, settings: ScopeSettings): boolean {
   return settings.scopeMode === "vault"
     ? !settings.excludedFolders.some((entry) => covers(entry, folder))
     : settings.includedFolders.some((entry) => covers(entry, folder));

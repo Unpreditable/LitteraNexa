@@ -32,7 +32,13 @@
       "folderNotFound_comment": "Tooltip on the warning icon shown when a row's folder no longer exists in the vault — renamed, moved or deleted. The path is visible in the field beside it, so it is not repeated here.",
       "folderNotFound": "Folder not found",
       "newFolder_comment": "Name Obsidian's settings search uses for a folder row whose path field is still empty. Rarely seen.",
-      "newFolder": "New folder"
+      "newFolder": "New folder",
+      "suggestFolders": {
+        "name_comment": "Toggle under the folder list. On: folders are offered in the suggestion list next to notes.",
+        "name": "Suggest folders",
+        "description_comment": "Description of the 'Suggest folders' toggle. 'The same scope as notes' means the folders allowed by the dropdown and folder list above it, so a folder is offered only where its notes would be. A folder link is a wikilink ending in a slash; clicking it shows the folder in Obsidian's file explorer sidebar instead of opening a note. Use the file explorer's name as Obsidian shows it in your language.",
+        "description": "Offer folders from the same scope as notes. Links reveal them in the file explorer."
+      }
     },
     "trigger": {
       "heading_comment": "Heading of the second settings group: the rules for when the suggestion list opens as the user types.",
@@ -134,5 +140,11 @@
         "all": "3 or more"
       }
     }
+  },
+  "notices": {
+    "folderNotFound_comment": "Notice shown when a folder link (a wikilink ending in a slash) is clicked but no folder with that path exists. {{path}} is the path as written in the link; keep the placeholder.",
+    "folderNotFound": "Folder not found: {{path}}",
+    "noFileExplorer_comment": "Notice shown when a folder link is clicked while Obsidian's Files core plugin (the file explorer sidebar) is turned off, so the folder can't be shown. Use the plugin's name as Obsidian shows it under Settings → Core plugins in your language.",
+    "noFileExplorer": "Turn on the Files core plugin to reveal folders."
   }
 }

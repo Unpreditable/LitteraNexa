@@ -31,6 +31,7 @@ describe("mergeSettings", () => {
       matchRule: "substring",
       firstWordOnly: false,
       extraAliases: "1",
+      suggestFolders: false,
     };
     expect(mergeSettings(saved)).toEqual(saved);
   });
@@ -54,6 +55,12 @@ describe("mergeSettings", () => {
   it("matches from the first word only unless saved off", () => {
     expect(mergeSettings({}).firstWordOnly).toBe(true);
     expect(mergeSettings({ firstWordOnly: false }).firstWordOnly).toBe(false);
+  });
+
+  it("suggests folders unless saved off", () => {
+    expect(mergeSettings(null).suggestFolders).toBe(true);
+    expect(mergeSettings({ suggestFolders: false }).suggestFolders).toBe(false);
+    expect(mergeSettings({ suggestFolders: "no" }).suggestFolders).toBe(true);
   });
 
   it("rejects numbers outside the range or not whole", () => {

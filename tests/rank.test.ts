@@ -99,4 +99,11 @@ describe("rank", () => {
       expect(rank([byName, byAlias])).toHaveLength(2);
     });
   });
+
+  it("puts a note before a folder of the same name and score", () => {
+    const query = q("People");
+    const folder = { ...m("folder:People", -1, query, "People"), isFolder: true };
+    const note = m("People.md", -1, query, "People");
+    expect(rank([folder, note])).toEqual([note, folder]);
+  });
 });

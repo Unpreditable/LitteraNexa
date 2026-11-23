@@ -78,6 +78,18 @@ export class LitteraNexaSettingTab extends PluginSettingTab {
         })),
       },
       {
+        // No heading: the toggle belongs to the scope group above the list.
+        type: "group",
+        cls: "littera-nexa-first-group",
+        items: [
+          {
+            name: t("settings.scope.suggestFolders.name"),
+            desc: t("settings.scope.suggestFolders.description"),
+            control: { type: "toggle", key: "suggestFolders", defaultValue: DEFAULT_SETTINGS.suggestFolders },
+          },
+        ],
+      },
+      {
         type: "group",
         cls: "littera-nexa-group",
         heading: t("settings.trigger.heading"),

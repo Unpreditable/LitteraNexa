@@ -79,3 +79,15 @@
 .setting-group.littera-nexa-folder-list .setting-item-heading {
   margin-bottom: var(--size-4-1);
 }
+
+/* A link to a folder that exists. Obsidian marks it unresolved, since no note has that name, and
+   fades it through these variables; pointing them at the resolved look undoes that without
+   out-ranking Obsidian's selectors. In live preview this class sits on a span around Obsidian's
+   own, which is why it works through variables: they reach inward. */
+.littera-nexa-folder-link {
+  --link-unresolved-color: var(--link-color);
+  --link-unresolved-opacity: 1;
+  --link-unresolved-filter: none;
+  --link-unresolved-decoration-style: solid;
+  --link-unresolved-decoration-color: var(--link-color);
+}

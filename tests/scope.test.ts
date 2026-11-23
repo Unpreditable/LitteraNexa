@@ -1,5 +1,5 @@
 import { FolderEntry } from "../src/settings";
-import { inScope } from "../src/suggest/scope";
+import { folderInScope, inScope } from "../src/suggest/scope";
 
 const vault = (...excludedFolders: FolderEntry[]) =>
   ({ scopeMode: "vault" as const, includedFolders: [], excludedFolders });
@@ -78,5 +78,22 @@ describe("inScope, selected folders", () => {
   it("ignores the excluded list", () => {
     const s = { scopeMode: "folders" as const, includedFolders: [deep("People")], excludedFolders: [deep("People")] };
     expect(inScope("People/Jane.md", s)).toBe(true);
+  });
+});
+
+describe("folderInScope", () => {
+  it("hides an excluded folder itself", () => {
+    expect(folderInScope("Archive", vault(deep("Archive")))).toBe(false);
+    expect(folderInScope("Archive/2020", vault(deep("Archive")))).toBe(false);
+  });
+
+  it("lets subfolders of a flat exclusion through", () => {
+    expect(folderInScope("Archive/2020", vault(flat("Archive")))).toBe(true);
+  });
+
+  it("offers a selected folder but not its subfolders when flat", () => {
+    expect(folderInScope("People", folders(flat("People")))).toBe(true);
+    expect(folderInScope("People/Staff", folders(flat("People")))).toBe(false);
+    expect(folderInScope("Other", folders(flat("People")))).toBe(false);
   });
 });

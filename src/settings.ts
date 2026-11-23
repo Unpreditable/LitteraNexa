@@ -46,6 +46,8 @@ export interface LitteraNexaSettings {
   /** The first typed word must fit the first word of a name or alias, not a later one. */
   firstWordOnly: boolean;
   extraAliases: ExtraAliases;
+  /** Offer folders as rows too, inserting a link that reveals the folder. */
+  suggestFolders: boolean;
 }
 
 export const MIN_CHARACTERS_RANGE = { min: 1, max: 6 };
@@ -72,6 +74,7 @@ export const DEFAULT_SETTINGS: LitteraNexaSettings = {
   matchRule: "anchored",
   firstWordOnly: true,
   extraAliases: "all",
+  suggestFolders: true,
 };
 
 /**
@@ -98,6 +101,7 @@ export function mergeSettings(stored: unknown): LitteraNexaSettings {
     matchRule: oneOf(s.matchRule, MATCH_RULES, d.matchRule),
     firstWordOnly: bool(s.firstWordOnly, d.firstWordOnly),
     extraAliases: oneOf(s.extraAliases, EXTRA_ALIASES, d.extraAliases),
+    suggestFolders: bool(s.suggestFolders, d.suggestFolders),
   };
 }
 

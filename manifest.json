@@ -3,7 +3,7 @@
   "name": "Littera Nexa",
   "version": "1.2.0",
   "minAppVersion": "1.13.0",
-  "description": "Link to a note by typing its name, with no [[ needed. It suggests notes and aliases as you type.",
+  "description": "Link to a note or folder by typing its name, with no [[ needed. It suggests notes, aliases and folders as you type.",
   "author": "Vitaly Ditman",
   "authorUrl": "https://github.com/Unpreditable",
   "isDesktopOnly": false

@@ -10,7 +10,11 @@ import {
   SectionCache,
   setIcon,
   TFile,
+  TFolder,
 } from "obsidian";
+import { FolderIndex } from "../folders/folder-index";
+import { folderLinkText } from "../folders/folder-links";
+import { linkFormat } from "../folders/internals";
 import { extraAliasLimit, LitteraNexaSettings } from "../settings";
 import { buildLink, isLinkableAlias } from "./links";
 import { menuOpen, suggestManager } from "./manager";
@@ -18,15 +22,19 @@ import { matchWords } from "./match";
 import { leavesAlone } from "./menus";
 import { findQueries, Query } from "./queries";
 import { rank } from "./rank";
-import { inScope } from "./scope";
+import { folderInScope, inScope } from "./scope";
 
 interface Candidate {
-  file: TFile;
+  /** The note, or the folder of a folder row. */
+  file: TFile | TFolder;
   /** The note name or the alias the query is matched against. */
   text: string;
   alias: string | null;
-  /** Small line under the title: the folder for a name, the note's path for an alias. */
+  /**
+   * Small line under the title: the folder for a name or a folder row, the note's path for an alias.
+   */
   note: string;
+  isFolder: boolean;
 }
 
 interface NoteMatch extends Candidate {
@@ -37,11 +45,14 @@ interface NoteMatch extends Candidate {
 export class NoteSuggest extends EditorSuggest<NoteMatch> {
   /** Rows found by the last onTrigger, which has to know whether there are any. */
   private rows: NoteMatch[] = [];
+  /** Folder rows, kept until a folder or the scope changes. */
+  private folderRows: { key: string; rows: Candidate[] } | null = null;
 
   constructor(
     app: App,
     /** Read on every keystroke, so a changed setting applies at once. */
     private readonly settings: () => LitteraNexaSettings,
+    private readonly folders: FolderIndex<TFolder>,
   ) {
     super(app);
   }
@@ -97,19 +108,32 @@ export class NoteSuggest extends EditorSuggest<NoteMatch> {
     const content = el.createDiv({ cls: "suggestion-content" });
     renderResults(content.createDiv({ cls: "suggestion-title" }), match.text, match.result);
     content.createDiv({ cls: "suggestion-note", text: match.note });
-    if (match.alias) setIcon(el.createDiv({ cls: "suggestion-aux" }).createSpan({ cls: "suggestion-flair" }), "forward");
+    const icon = match.isFolder ? "folder" : match.alias ? "forward" : null;
+    if (icon) setIcon(el.createDiv({ cls: "suggestion-aux" }).createSpan({ cls: "suggestion-flair" }), icon);
   }
 
   selectSuggestion(match: NoteMatch, evt: MouseEvent | KeyboardEvent): void {
     const context = this.context;
     if (!context) return;
-    const target = this.app.metadataCache.fileToLinktext(match.file, context.file.path);
     const line = context.start.line;
     // A live-preview cell needs no escaping here: Obsidian escapes the | when it writes the cell back.
     const inTable =
       this.isNoteEditor(context.editor) &&
       (this.sectionAt(context.file, line)?.type === "table" || context.editor.getLine(line).trimStart().startsWith("|"));
-    const link = buildLink(target, match.file.basename, match.alias, inTable);
+    const link =
+      match.file instanceof TFolder
+        ? buildLink(
+            folderLinkText(match.file.path, context.file.path, this.folders.lookup(), linkFormat(this.app)),
+            match.file.name,
+            match.file.name,
+            inTable,
+          )
+        : buildLink(
+            this.app.metadataCache.fileToLinktext(match.file, context.file.path),
+            match.file.basename,
+            match.alias,
+            inTable,
+          );
     const start = { line: context.start.line, ch: match.query.startCh };
     // Closed here, not left to Obsidian: it closes a menu only after a typed keystroke, so when a
     // suggester after this one claims the caret once the link is written, this menu would stay.
@@ -165,13 +189,34 @@ export class NoteSuggest extends EditorSuggest<NoteMatch> {
     for (const file of files) {
       // The root's own path is already "/".
       const folder = !file.parent || file.parent.isRoot() ? "/" : `${file.parent.path}/`;
-      candidates.push({ file, text: file.basename, alias: null, note: folder });
+      candidates.push({ file, text: file.basename, alias: null, note: folder, isFolder: false });
       const path = file.path.slice(0, -file.extension.length - 1);
       const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
       for (const alias of parseFrontMatterAliases(frontmatter) ?? []) {
-        if (isLinkableAlias(alias)) candidates.push({ file, text: alias, alias, note: path });
+        if (isLinkableAlias(alias)) candidates.push({ file, text: alias, alias, note: path, isFolder: false });
       }
     }
+    if (settings.suggestFolders) candidates.push(...this.folderCandidates());
     return candidates;
+  }
+
+  /** One row per folder in scope, in the index's order. */
+  private folderCandidates(): Candidate[] {
+    const { scopeMode, includedFolders, excludedFolders } = this.settings();
+    const scope = { scopeMode, includedFolders, excludedFolders };
+    const key = `${this.folders.version}:${JSON.stringify(scope)}`;
+    if (this.folderRows?.key === key) return this.folderRows.rows;
+    const rows = this.folders
+      .folders()
+      .filter((folder) => folderInScope(folder.path, scope))
+      .map((folder) => ({
+        file: folder,
+        text: folder.name,
+        alias: null,
+        note: !folder.parent || folder.parent.isRoot() ? "/" : `${folder.parent.path}/`,
+        isFolder: true,
+      }));
+    this.folderRows = { key, rows };
+    return rows;
   }
 }
